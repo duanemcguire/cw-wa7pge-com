@@ -30,25 +30,23 @@ template.
 
 ## How to use this template
 
-Fork and clone this repository (on GitHub, click the `Use this
-template` button), and then you need to edit the environment variable
-names found in the config, to make them match your own application
-name. A script called [setup_template.sh](setup_template.sh) is
-included to automatically perform the template instantiation. To run
-it, use `make`:
+This example project integrates with
+[d.rymcg.tech](https://github.com/EnigmaCurry/d.rymcg.tech#readme).
+Before proceeding, you must first clone and setup `d.rymcg.tech` on
+your workstation. Then you can use the following command to
+instantiate a new project from a template:
 
 ```
-## Invoke the script to instantiate the template:
-make
+d.rymcg.tech create myapp
 ```
 
-This process will rename all the environment variables found in
-`.env-dist`, `Makefile.dist` and `docker-compose.yaml` to use a new
-prefix based upon your project name. The original Makefile is deleted,
-and [Makefile.dist](Makefile.dist) is moved to become the new
-`Makefile`. The setup script is also deleted (self destructs) and a
-new git commit is made. This process only needs to be run one time,
-and it is permanent (but the prior state will be in the git history).
+This will create a new project in a new directory called `myapp`.
+
+This project is an example of a so-called
+["external"](https://github.com/enigmacurry/d.rymcg.tech#integrating-external-projects)
+project to `d.rymcg.tech`, as it does not live in the same source tree
+as `d.rymcg.tech`, but makes a link to inherit its Makefiles and to
+gain its superpowers.
 
 ## Example blueprints
 
@@ -65,19 +63,6 @@ This example template comes with the following Flask blueprints:
    * [upload route](api/app/routes/upload)
    * [upload model](api/app/models/upload)
    * [upload templates](api/app/templates/upload)
-
-## Setup
-
-This example project integrates with
-[d.rymcg.tech](https://github.com/EnigmaCurry/d.rymcg.tech#readme).
-Before proceeding, you must first clone and setup `d.rymcg.tech` on
-your workstation.
-
-This project is an example of a so-called
-["external"](https://github.com/enigmacurry/d.rymcg.tech#integrating-external-projects)
-project to `d.rymcg.tech`, as it does not live in the same source tree
-as `d.rymcg.tech`, but makes a link to inherit its Makefiles and to
-gain its superpowers.
 
 ## Configure
 

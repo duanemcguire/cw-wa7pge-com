@@ -8,25 +8,33 @@ template.
  * Uses a Makefile to wrap all setup, installation, and maintainance tasks.
  
  * Uses [d.rymcg.tech](https://github.com/EnigmaCurry/d.rymcg.tech) to
-   deploy to Docker with `docker compose`.
+   deploy to Docker with `docker compose`, which follows the
+   [12-factor philosophy on
+   configuration](https://12factor.net/config), keeping all
+   configuration inside separate `.env` files, per instance.
    
- * Includes PostgreSQL database, running as an optional sidecar
-   container.
+ * Each instance includes its own PostgreSQL database, running as an
+   optional sidecar container (but you could use an external/hosted
+   database instead).
 
  * Provides a local development environment using Python's
    [virtualenv](https://docs.python.org/3/library/venv.html) (native;
    not in Docker). The local dev service can access the same remote
-   database, running on your server. Local access is [provisioned via
-   SSH
-   tunnel](https://github.com/EnigmaCurry/d.rymcg.tech/blob/master/_scripts/postgresql-tunnel).
+   database as your public (DEV/STAGING) deployment, running on your
+   server. Local database access is [provisioned via SSH
+   tunnel](https://github.com/EnigmaCurry/d.rymcg.tech/blob/master/_scripts/postgresql-tunnel),
+   which can be used by any desktop or terminal PostgreSQL client
+   program.
 
  * Uses [Flask
    Blueprints](https://flask.palletsprojects.com/en/3.0.x/blueprints/)
    for a modular project design.
 
- * All database SQL queries are stored in separate `.sql` files. These
-   queries are loaded as Python functions using
-   [aiosql](https://nackjicholson.github.io/aiosql/).
+ * All database SQL queries are stored in separate `.sql` files, never
+   in Python code. These queries are loaded as dynamic Python
+   functions, using [aiosql](https://nackjicholson.github.io/aiosql/).
+   The ability to test your SQL code in isolation is a significant
+   feature, not to be missed!
 
 ## How to use this template
 
@@ -34,18 +42,21 @@ This example project integrates with
 [d.rymcg.tech](https://github.com/EnigmaCurry/d.rymcg.tech#readme).
 Before proceeding, you must first clone and setup `d.rymcg.tech` on
 your workstation. Then you can use the following command to
-instantiate a new project from a template:
+instantiate a new project from any supported template (including this
+one):
 
 ```
 d.rymcg.tech create myapp
 ```
 
-This will create a new project in a new directory called `myapp`.
+Choose the `Python Flask` template from the menu it presents to you,
+and this repository will be cloned as a new project directory, called
+`myapp`.
 
 This project is an example of a so-called
 ["external"](https://github.com/enigmacurry/d.rymcg.tech#integrating-external-projects)
 project to `d.rymcg.tech`, as it does not live in the same source tree
-as `d.rymcg.tech`, but makes a link to inherit its Makefiles and to
+as `d.rymcg.tech`, but it makes a link to inherit its Makefiles and to
 gain its superpowers.
 
 ## Example blueprints

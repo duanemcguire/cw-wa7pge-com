@@ -187,11 +187,3 @@ separate for each instance.
 This could be useful for having a "production" and "development"
 instance on the same box (at the risk of the integrity of the
 "production" instance, if you choose to do this).
-
-## Historical note
-
-This project was initialized from a
-[d.rymcg.tech](https://github.com/EnigmaCurry/d.rymcg.tech) template
-called `python-flask` on
-`Thu Jan  4 09:42:16 AM MST 2024` (version
-[fdfa4e96b9ae2cb0daff9d928ecf94a0b4cf69f8](https://github.com/EnigmaCurry/d.rymcg.tech/tree/fdfa4e96b9ae2cb0daff9d928ecf94a0b4cf69f8/_templates)).

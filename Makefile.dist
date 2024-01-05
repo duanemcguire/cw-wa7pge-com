@@ -32,7 +32,7 @@ override-hook:
 
 .PHONY: shell # Enter shell of api container (or set service=name to enter a different one)
 shell:
-	@make --no-print-directory docker-compose-shell SERVICE=flask-template
+	@make --no-print-directory docker-compose-shell SERVICE=api
 
 # .PHONY: dev-sync
 # dev-sync:

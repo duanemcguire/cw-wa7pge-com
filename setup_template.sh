@@ -107,7 +107,7 @@ test -d .git || git init
 
 sed -i "s/FLASK_TEMPLATE_/${APP_NAME_PREFIX}/g" .env-dist docker-compose.yaml Makefile.dist
 sed -i "s/FLASK_TEMPLATE/${APP_NAME_VAR}/g" .env-dist docker-compose.yaml Makefile.dist
-sed -i "s/flask-template/${APP_DOMAIN}/g" Makefile.dist
+sed -i "s/flask-template/${APP_DOMAIN}/g" .env-dist Makefile.dist
 
 rm -f Makefile setup_template.sh
 git mv Makefile.dist Makefile

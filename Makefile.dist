@@ -63,7 +63,7 @@ local-install: local-check-deps
 
 .PHONY: local-dev
 local-dev:
-	mkdir uploads
+	mkdir -p uploads
 	PYTHONPATH=$(shell realpath api) API_UPLOAD_FOLDER="$(shell realpath uploads)" API_LOG_LEVEL=debug API_DB=development.sqlite3 ${VIRTUALENV_DIR}/bin/python -m app
 
 .PHONY: dev # Starts localhost development server

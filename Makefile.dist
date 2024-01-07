@@ -45,6 +45,21 @@ localdb:
 .PHONY: local-db # Open BASH shell with remote DB connection through SSH
 local-db: localdb
 
+.PHONY: psql # Start psql shell directly inside the database container
+psql:
+	@make --no-print-directory docker-compose-shell SERVICE=database COMMAND="psql -U $$(${BIN}/dotenv -f ${ENV_FILE} get FLASK_TEMPLATE_POSTGRES_DATABASE)"
+
+.PHONY: drop-db # Drop and reinitialize entire database (only allowed if DEV_MODE=true and if all clients are disconnected)
+drop-db:
+	@test "$$(${BIN}/dotenv -f ${ENV_FILE} get FLASK_TEMPLATE_DEV_MODE)" != "true" && echo "Refusing to drop tables because the deployment is not in DEV mode." && exit 1 || true
+	@${BIN}/confirm no "Are you sure you want to DESTROY the entire database" "?"
+	@POSTGRES_DATABASE="$$(${BIN}/dotenv -f ${ENV_FILE} get FLASK_TEMPLATE_POSTGRES_DATABASE)" && ${MAKE} shell service=database COMMAND="dropdb -U $$POSTGRES_DATABASE $$POSTGRES_DATABASE && createdb -U $$POSTGRES_DATABASE $$POSTGRES_DATABASE"
+	@echo
+	@echo "Database dropped and reinitialized to a blank state."
+	@echo
+
+.PHONY: dropdb
+dropdb: drop-db
 
 
 ###

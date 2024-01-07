@@ -7,7 +7,7 @@ import sys, os
 sys.path.insert(0, os.path.dirname(__file__))
 
 from . import lib
-from database import db
+from lib.db import db
 from routes import setup_routes
 
 from lib.config import (

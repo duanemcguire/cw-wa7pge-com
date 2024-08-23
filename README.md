@@ -41,23 +41,35 @@ template.
 This example project integrates with
 [d.rymcg.tech](https://github.com/EnigmaCurry/d.rymcg.tech#readme).
 Before proceeding, you must first clone and setup `d.rymcg.tech` on
-your workstation. Then you can use the following command to
-instantiate a new project from any supported template (including this
-one):
+your workstation. 
+
+Clone this project to anyplace you like, naming it something new
+(replace `foo` with your new project name):
 
 ```
-d.rymcg.tech create myapp
+git clone https://github.com/EnigmaCurry/flask-template.git foo
+cd foo
 ```
-
-Choose the `Python Flask` template from the menu it presents to you,
-and this repository will be cloned as a new project directory, called
-`myapp`.
 
 This project is an example of a so-called
 ["external"](https://github.com/enigmacurry/d.rymcg.tech#integrating-external-projects)
 project to `d.rymcg.tech`, as it does not live in the same source tree
 as `d.rymcg.tech`, but it makes a link to inherit its Makefiles and to
-gain its superpowers.
+gain its superpowers. At the top of the Makefile, you should see
+`ROOT_DIR` that points to the main d.rymcg.tech directory.
+
+### Rename variables
+
+By default, all the variables in the config are prefixed with the name
+`FLASK_TEMPLATE`. You should change all of these variable names in the
+following places:
+
+ * [.env-dist](.env-dist) - rename all variables with a new prefix
+   (eg. change every `FLASK_TEMPLATE_` to `FOO_`).
+ * [docker-compose.yaml](docker-compose.yaml) - rename all variables
+   according to [.env-dist](.env-dist).
+ * [Makefile](Makefile) - rename all variables according to
+   [.env-dist](.env-dist) especially in the `override-hook` section.
 
 ## Example blueprints
 
@@ -79,7 +91,8 @@ This example template comes with the following Flask blueprints:
 
 Once
 [d.rymcg.tech](https://github.com/EnigmaCurry/d.rymcg.tech#readme) has
-been installed, you can come back to this directory.
+been configured, and you have Traefik deployed, you can come back to
+this directory.
 
 Run:
 

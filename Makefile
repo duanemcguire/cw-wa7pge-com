@@ -61,6 +61,16 @@ drop-db:
 .PHONY: dropdb
 dropdb: drop-db
 
+.PHONY: test
+test:
+	@make --no-print-directory docker-compose-lifecycle-cmd EXTRA_ARGS="--profile default build"
+	@make --no-print-directory docker-compose-lifecycle-cmd EXTRA_ARGS="--profile test build"
+	@make --no-print-directory docker-compose-lifecycle-cmd EXTRA_ARGS="--profile test up -d database-test"
+	@make --no-print-directory docker-compose-lifecycle-cmd EXTRA_ARGS="--profile test up api-tests"
+
+.PHONY: test-destroy
+test-destroy:
+	@make --no-print-directory docker-compose-lifecycle-cmd EXTRA_ARGS="--profile test down -v"
 
 ###
 ### Local non-docker python development inside virtualenv:

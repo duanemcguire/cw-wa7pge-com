@@ -45,4 +45,4 @@ def count_user_encounters(username):
 def top_visitors():
     """Return the top 10 visitors"""
     with db(as_dict=True) as conn:
-        return queries.top_visitors(conn)
+        return list(queries.top_visitors(conn))

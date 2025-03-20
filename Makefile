@@ -47,7 +47,7 @@ local-db: localdb
 
   .PHONY: psql # Start psql shell directly inside the database container
 psql:
-	@make --no-print-directory docker-compose-shell SERVICE=database COMMAND="psql -d $$(${BIN}/dotenv -f ${ENV_FILE} get SLS_ML_POSTGRES_DATABASE) -U $$(${BIN}/dotenv -f ${ENV_FILE} get SLS_ML_POSTGRES_USER)"
+	@make --no-print-directory docker-compose-shell SERVICE=database COMMAND="psql -d $$(${BIN}/dotenv -f ${ENV_FILE} get FLASK_TEMPLATE_POSTGRES_DATABASE) -U $$(${BIN}/dotenv -f ${ENV_FILE} get FLASK_TEMPLATE_POSTGRES_USER)"
 
 .PHONY: drop-db # Drop and reinitialize entire database (only allowed if DEV_MODE=true and if all clients are disconnected)
 drop-db:

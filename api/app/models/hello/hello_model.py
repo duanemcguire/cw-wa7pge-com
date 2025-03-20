@@ -28,11 +28,11 @@ def create_tables_hello():
 def log_user_encounter(username, salutation, ip_address):
     """Record an encounter with a user"""
     with db() as transaction:
-        queries.log_user_encounter(transaction,
-                                   username=username,
-                                   salutation=salutation,
-                                   ip_address=ip_address)
+        queries.log_user_encounter(
+            transaction, username=username, salutation=salutation, ip_address=ip_address
+        )
         transaction.commit()
+
 
 def count_user_encounters(username):
     """Return how many times a user has been greeted"""
@@ -43,7 +43,8 @@ def count_user_encounters(username):
         else:
             return times_greeted
 
+
 def top_visitors():
     """Return the top 10 visitors"""
-    with db() as conn:
+    with db(as_dict=True) as conn:
         return queries.top_visitors(conn)

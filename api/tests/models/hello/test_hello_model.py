@@ -12,14 +12,6 @@ from app.models.hello.hello_model import (
 )
 from app.lib.db import db
 
-# If your test database is different than your default,
-# you might need to set environment variables before imports happen.
-# For example:
-# os.environ["FLASK_TEMPLATE_POSTGRES_DATABASE"] = "your_test_database"
-# os.environ["FLASK_TEMPLATE_POSTGRES_USER"] = "your_test_user"
-# os.environ["FLASK_TEMPLATE_POSTGRES_PASSWORD"] = "your_test_password"
-
-
 # A module-scoped fixture to set up the database tables once.
 @pytest.fixture(scope="module", autouse=True)
 def setup_database():

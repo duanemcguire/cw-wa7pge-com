@@ -2,6 +2,7 @@ import sys
 import os
 from flask import Flask
 from werkzeug.middleware.proxy_fix import ProxyFix
+from flask_cors import CORS
 
 import sys, os
 sys.path.insert(0, os.path.dirname(__file__))
@@ -18,6 +19,7 @@ from lib.config import (
     DEPLOYMENT,
     LOG_LEVEL,
     APP_SECRET_KEY,
+    CORS_WHITELIST
 )
 
 log = logging.getLogger("app")
@@ -26,6 +28,8 @@ app = Flask(__name__)
 app.secret_key = APP_SECRET_KEY
 
 setup_routes(app)
+
+CORS(app, origins=CORS_WHITELIST)
 
 ## Configure WSGI to trust X-Forwarded-For header from Traefik Proxy
 # https://flask.palletsprojects.com/en/2.2.x/deploying/proxy_fix/

@@ -14,6 +14,7 @@ config-hook:
 	@${BIN}/reconfigure ${ENV_FILE} FLASK_TEMPLATE_INSTANCE=$${instance:-default}
 	@${BIN}/reconfigure_auth ${ENV_FILE} FLASK_TEMPLATE
 	@[[ -z "$$(${BIN}/dotenv -f ${ENV_FILE} get FLASK_TEMPLATE_POSTGRES_PASSWORD)" ]] && ${BIN}/reconfigure ${ENV_FILE} FLASK_TEMPLATE_POSTGRES_PASSWORD=$$(openssl rand -base64 45) || true
+	@${BIN}/reconfigure_ask ${ENV_FILE} FLASK_TEMPLATE_API_CORS_WHITELIST "Enter the CORS domain names to allow to access the API (comma separated; * to allow any domain;)"
 	@echo ""
 
 .PHONY: override-hook

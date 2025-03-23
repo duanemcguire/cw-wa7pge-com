@@ -29,7 +29,7 @@ override-hook:
 ####                         # (this hardcodes the string into docker-compose.override.yaml)
 ####   name=@VARIABLE_NAME   # sets the template 'name' field to the literal string '${VARIABLE_NAME}'
 ####                         # (used for regular docker-compose expansion of env vars by name.)
-	@${BIN}/docker_compose_override ${ENV_FILE} project=:flask-template instance=@FLASK_TEMPLATE_INSTANCE traefik_host=@FLASK_TEMPLATE_TRAEFIK_HOST http_auth=FLASK_TEMPLATE_HTTP_AUTH http_auth_var=@FLASK_TEMPLATE_HTTP_AUTH ip_sourcerange=@FLASK_TEMPLATE_IP_SOURCERANGE oauth2=FLASK_TEMPLATE_OAUTH2 authorized_group=FLASK_TEMPLATE_OAUTH2_AUTHORIZED_GROUP development_mode=FLASK_TEMPLATE_DEVELOPMENT_MODE enable_mtls_auth=FLASK_TEMPLATE_MTLS_AUTH mtls_authorized_certs=FLASK_TEMPLATE_MTLS_AUTHORIZED_CERTS
+	@${BIN}/docker_compose_override ${ENV_FILE} project=:flask-template instance=@FLASK_TEMPLATE_INSTANCE traefik_host=@FLASK_TEMPLATE_TRAEFIK_HOST http_auth=FLASK_TEMPLATE_HTTP_AUTH http_auth_var=@FLASK_TEMPLATE_HTTP_AUTH ip_sourcerange=@FLASK_TEMPLATE_IP_SOURCERANGE oauth2=FLASK_TEMPLATE_OAUTH2 authorized_group=FLASK_TEMPLATE_OAUTH2_AUTHORIZED_GROUP development_mode=FLASK_TEMPLATE_DEVELOPMENT_MODE enable_mtls_auth=FLASK_TEMPLATE_MTLS_AUTH mtls_authorized_certs=FLASK_TEMPLATE_MTLS_AUTHORIZED_CERTS api_cors_whitelist=FLASK_TEMPLATE_API_CORS_WHITELIST
 
 .PHONY: shell # Enter shell of api container (or set service=name to enter a different one)
 shell:

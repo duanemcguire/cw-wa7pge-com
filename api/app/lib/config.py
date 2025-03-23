@@ -64,6 +64,3 @@ HTTP_PORT = int(get_config("HTTP_PORT", "5001"))
 ## Detect if werkzeug is running the reloader thread or not:
 ## https://stackoverflow.com/questions/25504149/why-does-running-the-flask-dev-server-run-itself-twice/25504196#25504196
 WERKZEUG_RELOADING = werkzeug.serving.is_running_from_reloader()
-
-CORS_WHITELIST = get_config("CORS_WHITELIST", "*")
-CORS_WHITELIST = [origin.strip() for origin in CORS_WHITELIST.split(",")]

@@ -1,11 +1,6 @@
 from flask import request, Blueprint, session, abort
 from jinja2 import TemplateNotFound
-from models.hello import (
-    create_tables_hello,
-    log_user_encounter,
-    count_user_encounters,
-    top_visitors
-)
+from models.hello import log_user_encounter, count_user_encounters, top_visitors
 from lib.template import render
 import logging
 
@@ -18,11 +13,6 @@ log = logging.getLogger(__name__)
 
 hello = Blueprint("hello", __name__, template_folder="templates")
 
-
-@hello.record_once
-def init(context):
-    """Initialize the hello module on app startup"""
-    create_tables_hello()
 
 @hello.route("/", defaults={"salutation": "hello"})
 @hello.route("/<salutation>")

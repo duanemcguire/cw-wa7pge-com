@@ -15,15 +15,6 @@ queries = aiosql.from_path(
     driver_adapter="psycopg2",
 )
 
-
-def create_tables_hello():
-    with db(commit=True) as conn:
-        log.debug("Creating database tables if they don't exist already ...")
-        queries.ddl_lock(conn)
-        queries.create_table_visitor(conn)
-        queries.create_index_visitor_name(conn)
-
-
 def log_user_encounter(username, salutation, ip_address):
     """Record an encounter with a user"""
     with db(commit=True) as conn:

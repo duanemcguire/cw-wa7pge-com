@@ -63,7 +63,12 @@ dropdb: drop-db
 
 .PHONY: migrate-db # Run alembic migration scripts
 migrate-db:
-	${MAKE} shell service=api
+	${MAKE} shell service=api COMMAND="alembic upgrade head"
+
+.PHONY: migrate-info # Get current db migration info
+migrate-info:
+	${MAKE} shell service=api COMMAND="alembic current"
+
 
 ###
 ### Local non-docker python development inside virtualenv:
@@ -112,6 +117,6 @@ local-upgrade:
 	${VIRTUALENV_DIR}/bin/python -m pur -r api/requirements/requirements.txt
 	${VIRTUALENV_DIR}/bin/python -m pur -r api/requirements/dev.requirements.txt
 
-.PHONY: local-migrate-db # Run alembic migration scripts
-local-migrate-db:
-	export PGDATABASE="postgres" PGUSER="postgres" PGPASSWORD="postgres" PGHOST="localhost" PGPORT=5433 && $${SHELL} --rcfile <(echo "source ${VIRTUALENV_DIR}/bin/activate && cd api && alembic upgrade head && exec $$SHELL")
+# .PHONY: local-migrate-db # Run alembic migration scripts on local database
+# local-migrate-db:
+# 	export PGDATABASE="postgres" PGUSER="postgres" PGPASSWORD="postgres" PGHOST="localhost" PGPORT=5432 && $${SHELL} --rcfile <(echo "source ${VIRTUALENV_DIR}/bin/activate && cd api && alembic upgrade head && exec $$SHELL")

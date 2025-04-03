@@ -1,4 +1,3 @@
-version: "3.9"
 services:
   ## The Flask API service:
   ## If you change this name, change it in docker-compose.instance.yaml too:

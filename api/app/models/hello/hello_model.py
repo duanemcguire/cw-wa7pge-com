@@ -15,14 +15,12 @@ queries = aiosql.from_path(
     driver_adapter="psycopg2",
 )
 
-
 def log_user_encounter(username, salutation, ip_address):
     """Record an encounter with a user"""
-    with db() as transaction:
+    with db(commit=True) as conn:
         queries.log_user_encounter(
-            transaction, username=username, salutation=salutation, ip_address=ip_address
+            conn, username=username, salutation=salutation, ip_address=ip_address
         )
-        transaction.commit()
 
 
 def count_user_encounters(username):
@@ -37,5 +35,5 @@ def count_user_encounters(username):
 
 def top_visitors():
     """Return the top 10 visitors"""
-    with db() as conn:
-        return queries.top_visitors(conn)
+    with db(as_dict=True) as conn:
+        return list(queries.top_visitors(conn))

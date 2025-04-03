@@ -9,6 +9,6 @@
 <table border>
     <tr><th>Username</th><th>Total encounters</th></tr>
     {% for user in users %}
-    <tr><td>{{ user[0] }}</td><td>{{ user[1] }}</td></tr>
+    <tr><td>{{ user['name'] }}</td><td>{{ user['total_visits'] }}</td></tr>
     {% endfor %}
 </table>

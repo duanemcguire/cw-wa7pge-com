@@ -1,0 +1,9 @@
+ARG IMAGE
+FROM ${IMAGE}
+
+ENV PYTHONPATH=/code
+COPY requirements/dev.requirements.txt dev.requirements.txt
+RUN pip install --no-cache-dir -r dev.requirements.txt
+COPY ./tests tests
+
+CMD pytest -v

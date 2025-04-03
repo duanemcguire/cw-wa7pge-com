@@ -119,6 +119,13 @@ Run:
 make open
 ```
 
+## Unit tests
+
+There is a separate containers for the unit tests: `api-tests` and
+`database-test`.
+
+To run tests, run: `make test`
+
 ## Local Database
 
 To access the database directly from your workstation, run:

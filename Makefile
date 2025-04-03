@@ -14,6 +14,7 @@ config-hook:
 	@${BIN}/reconfigure ${ENV_FILE} FLASK_TEMPLATE_INSTANCE=$${instance:-default}
 	@${BIN}/reconfigure_auth ${ENV_FILE} FLASK_TEMPLATE
 	@[[ -z "$$(${BIN}/dotenv -f ${ENV_FILE} get FLASK_TEMPLATE_POSTGRES_PASSWORD)" ]] && ${BIN}/reconfigure ${ENV_FILE} FLASK_TEMPLATE_POSTGRES_PASSWORD=$$(openssl rand -base64 45) || true
+	@${BIN}/reconfigure_ask ${ENV_FILE} FLASK_TEMPLATE_API_CORS_WHITELIST "Enter the CORS domain names to allow to access the API (comma separated; * to allow any domain;)"
 	@echo ""
 
 .PHONY: override-hook
@@ -28,7 +29,7 @@ override-hook:
 ####                         # (this hardcodes the string into docker-compose.override.yaml)
 ####   name=@VARIABLE_NAME   # sets the template 'name' field to the literal string '${VARIABLE_NAME}'
 ####                         # (used for regular docker-compose expansion of env vars by name.)
-	@${BIN}/docker_compose_override ${ENV_FILE} project=:flask-template instance=@FLASK_TEMPLATE_INSTANCE traefik_host=@FLASK_TEMPLATE_TRAEFIK_HOST http_auth=FLASK_TEMPLATE_HTTP_AUTH http_auth_var=@FLASK_TEMPLATE_HTTP_AUTH ip_sourcerange=@FLASK_TEMPLATE_IP_SOURCERANGE oauth2=FLASK_TEMPLATE_OAUTH2 authorized_group=FLASK_TEMPLATE_OAUTH2_AUTHORIZED_GROUP development_mode=FLASK_TEMPLATE_DEVELOPMENT_MODE enable_mtls_auth=FLASK_TEMPLATE_MTLS_AUTH mtls_authorized_certs=FLASK_TEMPLATE_MTLS_AUTHORIZED_CERTS
+	@${BIN}/docker_compose_override ${ENV_FILE} project=:flask-template instance=@FLASK_TEMPLATE_INSTANCE traefik_host=@FLASK_TEMPLATE_TRAEFIK_HOST http_auth=FLASK_TEMPLATE_HTTP_AUTH http_auth_var=@FLASK_TEMPLATE_HTTP_AUTH ip_sourcerange=@FLASK_TEMPLATE_IP_SOURCERANGE oauth2=FLASK_TEMPLATE_OAUTH2 authorized_group=FLASK_TEMPLATE_OAUTH2_AUTHORIZED_GROUP development_mode=FLASK_TEMPLATE_DEVELOPMENT_MODE enable_mtls_auth=FLASK_TEMPLATE_MTLS_AUTH mtls_authorized_certs=FLASK_TEMPLATE_MTLS_AUTHORIZED_CERTS api_cors_whitelist=FLASK_TEMPLATE_API_CORS_WHITELIST
 
 .PHONY: shell # Enter shell of api container (or set service=name to enter a different one)
 shell:
@@ -45,9 +46,9 @@ localdb:
 .PHONY: local-db # Open BASH shell with remote DB connection through SSH
 local-db: localdb
 
-.PHONY: psql # Start psql shell directly inside the database container
+  .PHONY: psql # Start psql shell directly inside the database container
 psql:
-	@make --no-print-directory docker-compose-shell SERVICE=database COMMAND="psql -U $$(${BIN}/dotenv -f ${ENV_FILE} get FLASK_TEMPLATE_POSTGRES_DATABASE)"
+	@make --no-print-directory docker-compose-shell SERVICE=database COMMAND="psql -d $$(${BIN}/dotenv -f ${ENV_FILE} get FLASK_TEMPLATE_POSTGRES_DATABASE) -U $$(${BIN}/dotenv -f ${ENV_FILE} get FLASK_TEMPLATE_POSTGRES_USER)"
 
 .PHONY: drop-db # Drop and reinitialize entire database (only allowed if DEV_MODE=true and if all clients are disconnected)
 drop-db:
@@ -64,6 +65,17 @@ dropdb: drop-db
 .PHONY: migrate-db # Run alembic migration scripts
 migrate-db:
 	${MAKE} shell service=api
+
+.PHONY: test
+test:
+	@make --no-print-directory docker-compose-lifecycle-cmd EXTRA_ARGS="--profile default build"
+	@make --no-print-directory docker-compose-lifecycle-cmd EXTRA_ARGS="--profile test build"
+	@make --no-print-directory docker-compose-lifecycle-cmd EXTRA_ARGS="--profile test up -d database-test"
+	@make --no-print-directory docker-compose-lifecycle-cmd EXTRA_ARGS="--profile test up api-tests"
+
+.PHONY: test-destroy
+test-destroy:
+	@make --no-print-directory docker-compose-lifecycle-cmd EXTRA_ARGS="--profile test down -v"
 
 ###
 ### Local non-docker python development inside virtualenv:

@@ -8,3 +8,4 @@ aiosql==v9.2
 sqlalchemy==2.0.25
 flask-cors==5.0.0
 boto3==1.34.14
+alembic==1.15.2

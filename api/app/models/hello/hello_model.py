@@ -16,23 +16,14 @@ queries = aiosql.from_path(
 )
 
 
-def create_tables_hello():
-    with db() as transaction:
-        log.debug("Creating database tables if they don't exist already ...")
-        queries.ddl_lock(transaction)
-        queries.create_table_visitor(transaction)
-        queries.create_index_visitor_name(transaction)
-        transaction.commit()
-
-
 def log_user_encounter(username, salutation, ip_address):
     """Record an encounter with a user"""
     with db() as transaction:
-        queries.log_user_encounter(transaction,
-                                   username=username,
-                                   salutation=salutation,
-                                   ip_address=ip_address)
+        queries.log_user_encounter(
+            transaction, username=username, salutation=salutation, ip_address=ip_address
+        )
         transaction.commit()
+
 
 def count_user_encounters(username):
     """Return how many times a user has been greeted"""
@@ -42,6 +33,7 @@ def count_user_encounters(username):
             return 0
         else:
             return times_greeted
+
 
 def top_visitors():
     """Return the top 10 visitors"""

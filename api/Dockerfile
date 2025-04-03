@@ -14,6 +14,8 @@ WORKDIR /code
 COPY requirements/requirements.txt requirements.txt
 RUN pip install --no-cache-dir --upgrade -r requirements.txt
 COPY ./app app
+COPY ./alembic alembic
+COPY ./alembic.ini alembic.ini
 EXPOSE 8000
 VOLUME ${UPLOADS_FOLDER}
 CMD gunicorn --worker-tmp-dir /dev/shm --workers=2 --threads=4 --worker-class=gthread --bind 0.0.0.0 app:app

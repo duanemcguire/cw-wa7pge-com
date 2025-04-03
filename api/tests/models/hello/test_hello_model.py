@@ -2,21 +2,22 @@
 import os
 import pytest
 from datetime import datetime
+import subprocess
 
 # Import the functions you want to test.
 from app.models.hello.hello_model import (
-    create_tables_hello,
     log_user_encounter,
     count_user_encounters,
     top_visitors,
 )
 from app.lib.db import db
 
+
 # A module-scoped fixture to set up the database tables once.
 @pytest.fixture(scope="module", autouse=True)
 def setup_database():
-    # Ensure that the hello-related tables exist.
-    create_tables_hello()
+    # Run the db migration to create the schema:
+    subprocess.run(["alembic", "upgrade", "head"], check=True)
     # Optionally, clean up the visitor table before starting tests.
     with open("/tmp/cleanup.sql", "w") as f:
         # Write your cleanup SQL commands, if needed.

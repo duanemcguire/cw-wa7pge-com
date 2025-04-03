@@ -36,6 +36,9 @@ template.
    The ability to test your SQL code in isolation is a significant
    feature, not to be missed!
 
+ * Uses [alembic](https://alembic.sqlalchemy.org/en/latest/) for
+   database migration support.
+
 ## How to use this template
 
 This example project integrates with
@@ -111,6 +114,14 @@ Run:
 make install
 ```
 
+## Run alembic migration to create initial database schema
+
+Run:
+
+```
+make migrate-db
+```
+
 ## Open in your web browser
 
 Run:
@@ -143,6 +154,8 @@ On Arch linux, you want to install the postgres client package: `sudo pacman -S 
 
 On Ubuntu: `sudo apt-get install -y postgresql-client libpq-dev python3-dev`
 
+On Fedora: `sudo dnf install python3.11 python3.11-devel postgresql libpq-devel`
+
 Inside the `make local-db` shell, you can run any of the standard
 postgresql client tools: `psql`, `createdb`, `createuser`, `pg_dump`,
 etc. The user credentials are pre-set in your environment for easy
@@ -170,6 +183,9 @@ You can install a Python virtual environment (`virtualenv`) for local
 development mode. This virtualenv does not run in a container, but it
 require you to install the remote database service.
 
+Ensure you have installed the postgres dependencies listed in the
+prior section (python3.11, python3.11-devel, libpq-devel).
+
 Ensure that you have installed the remote database:
 
 ```
@@ -196,6 +212,29 @@ Once inside the `local-db` shell, you can start the local server:
 make dev
 ```
 
+## Add database migrations scripts
+
+To add additional database migration scripts to accomodate an evolving
+schema, you need to add new scripts to the `api/alembic/versions`
+directory. To make this easy, you can use the `alembic` CLI program,
+which is available in the local development virtualenv.
+
+ * Follow the steps in the prior section (`make local-install`)
+ * Activate the local virtualenv (`make local-activate`)
+ * `cd api`
+ * Follow the [alembic
+   tutorial](https://alembic.sqlalchemy.org/en/latest/tutorial.html#create-a-migration-script)
+   to create a migration script, e.g.:
+   * `alembic revision -m "add new tables"`
+   * Follow the example in
+     [init_ddl.py](api/alembic/versions/f25d1dab29bf_init_ddl.py)
+   * Add sql to a file with the same name and the extension `.sql`.
+     Make sure to reference this sql script in your python migration.
+   * Rebuild the image and install: `make install`.
+   * Run the full migration on the live database: `make migrate-db`.
+   * Find the current migration of the database: `make migrate-info`.
+     (this should list the id of the latest migration applied.)
+     
 ## Instantiation
 
 If you wish to run more than one instance of the app on the same

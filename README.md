@@ -39,6 +39,9 @@ template.
  * Uses [alembic](https://alembic.sqlalchemy.org/en/latest/) for
    database migration support.
 
+ * OpenAPI spec for JSON APIs via
+   [flask-openapi3](https://github.com/luolingchun/flask-openapi3).
+
 ## How to use this template
 
 This example project integrates with
@@ -89,6 +92,11 @@ This example template comes with the following Flask blueprints:
    * [upload route](api/app/routes/upload)
    * [upload model](api/app/models/upload)
    * [upload templates](api/app/templates/upload)
+
+ * book - a JSON API with OpenAPI spec
+   
+   * [book route](api/app/routes/book)
+   * OpenAPI docs site live at `/openapi`
 
 ## Configure
 

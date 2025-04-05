@@ -74,8 +74,8 @@ variables at once:
 make template
 ```
 
-You can do this manually if you prefer, you should change all of these
-variable names in the following places:
+You can do this manually instead, if you prefer: you should change all
+of these variable names in the following places:
 
  * [.env-dist](.env-dist) - rename all variables with a new prefix
    (eg. change every `FLASK_TEMPLATE_` to `FOO_`).

@@ -67,8 +67,15 @@ gain its superpowers. At the top of the Makefile, you should see
 ### Rename variables
 
 By default, all the variables in the config are prefixed with the name
-`FLASK_TEMPLATE`. You should change all of these variable names in the
-following places:
+`FLASK_TEMPLATE`. There is a script included to rename all these
+variables at once:
+
+```
+make template
+```
+
+You can do this manually if you prefer, you should change all of these
+variable names in the following places:
 
  * [.env-dist](.env-dist) - rename all variables with a new prefix
    (eg. change every `FLASK_TEMPLATE_` to `FOO_`).
@@ -76,6 +83,7 @@ following places:
    according to [.env-dist](.env-dist).
  * [Makefile](Makefile) - rename all variables according to
    [.env-dist](.env-dist) especially in the `override-hook` section.
+
 
 ## Example blueprints
 

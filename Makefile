@@ -4,6 +4,15 @@ VIRTUALENV_DIR=$(shell realpath virtualenv)
 include ${ROOT_DIR}/_scripts/Makefile.projects
 include ${ROOT_DIR}/_scripts/Makefile.instance
 
+.PHONY: template  # Rename variables in the template for a new project
+template:
+	@if [ -f template.sh ]; then \
+		bash template.sh; \
+	else \
+		echo "Template has already been ejected."; \
+	fi
+
+
 .PHONY: config-hook
 config-hook:
 #### This interactive configuration wizard creates the .env_{DOCKER_CONTEXT}_{INSTANCE} config file using .env-dist as the template:

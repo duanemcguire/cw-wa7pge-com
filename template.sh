@@ -3,8 +3,9 @@
 # Prompt user for new project prefix
 read -rp "Enter the new project prefix: " input_prefix
 
-# Normalize the prefix: replace spaces and dashes with underscores, then convert to uppercase
+# Normalize the prefix: replace spaces and dashes with underscores, convert to uppercase, and ensure it ends with an underscore
 new_prefix=$(echo "$input_prefix" | tr '[:lower:]' '[:upper:]' | sed -E 's/[ -]+/_/g')
+[[ "$new_prefix" != *_ ]] && new_prefix="${new_prefix}_"
 
 # Check if the prefix is non-empty after normalization
 if [ -z "$new_prefix" ]; then

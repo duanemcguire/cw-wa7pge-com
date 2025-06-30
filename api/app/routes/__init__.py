@@ -1,8 +1,8 @@
 from .hello.hello_controller import hello
-from .phrases.phrases_contoller import phrases
+from .phrases.phrases_controller import phrases
 from .callsigns.callsigns_controller import callsigns
 from .books.books_controller import  books
-from .main.main_contoller import main
+from .main.main_controller import main
 from flask import redirect
 import logging
 

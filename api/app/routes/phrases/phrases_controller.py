@@ -1,5 +1,4 @@
 from flask import Flask, render_template, request, current_app
-from app.phrases import bp
 import os, sys
 import random
 import logging

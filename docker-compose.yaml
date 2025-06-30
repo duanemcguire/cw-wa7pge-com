@@ -2,6 +2,7 @@ services:
   ## The Flask API service:
   ## If you change this name, change it in docker-compose.instance.yaml too:
   api:
+    restart: unless-stopped
     profiles: ['default']
     depends_on:
       database:
@@ -31,6 +32,7 @@ services:
   ## The PostgreSQL database service:
   ## If you change this name, change it in docker-compose.instance.yaml too:
   database:
+    restart: unless-stopped
     profiles: ['default']
     image: postgres:16
     environment:
@@ -45,6 +47,7 @@ services:
       - default
 
   api-tests:
+    restart: unless-stopped
     profiles: ['test']
     build:
       context: api
@@ -71,6 +74,7 @@ services:
   ## The PostgreSQL TEST database service:
   ## There is no persistent volume for the TEST database!
   database-test:
+    restart: unless-stopped
     profiles: ['test']
     image: postgres:16
     environment:

@@ -58,6 +58,6 @@ class DictCursorConnection:
         return self.conn.close()
 
 
-_connection_pool = SimpleConnectionPool(1, 10, "")
-pool = PostgresSimpleConnectionPool(pool=_connection_pool)
-db = pool.connection
+#_connection_pool = SimpleConnectionPool(1, 10, "")
+#pool = PostgresSimpleConnectionPool(pool=_connection_pool)
+#db = pool.connection

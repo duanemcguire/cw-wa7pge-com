@@ -1,0 +1,27 @@
+{% extends 'base.html' %}
+    
+{% block content %}
+    
+    <h1>A song title from the ages</h1>
+    <form method="POST">
+        
+        Collection: <select name="filename">
+            {% for file in files %}
+                <option value="{{ file }}" {% if file == selected_file %}selected{% endif %}>{{ file }}</option>
+            {% endfor %}
+        </select>
+        <br>
+        <button type="submit">Show a Song Title</button>
+
+    </form>
+
+    {% if line %}
+        <div class="line-display">
+            <p>Your song from {{ selected_file }}:</p>
+            <p><strong>{{ line }}</p></div></strong></p>
+        </div>
+    {% endif %}
+
+    <BR><BR>
+    <a href="/phrases/song-titles">Copy practice with these titles</a>
+{% endblock %}    

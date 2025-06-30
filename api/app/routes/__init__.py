@@ -1,6 +1,8 @@
 from .hello.hello_controller import hello
-from .upload.upload_controller import upload
-from .book.book_controller import book
+from .phrases.phrases_contoller import phrases
+from .callsigns.callsigns_controller import callsigns
+from .books.books_controller import  books
+from .main.main_contoller import main
 from flask import redirect
 import logging
 
@@ -9,12 +11,12 @@ log = logging.getLogger(__name__)
 
 def setup_routes(app):
     app.register_blueprint(hello, url_prefix="/hello")
-    app.register_blueprint(upload, url_prefix="/upload")
-    app.register_api(book, url_prefix="/book")
+    app.register_blueprint(main, url_prefix="/")
+    app.register_blueprint(books, url_prefix="/books")
+    app.register_blueprint(callsigns, url_prefix="/callsigns")
+    app.register_blueprint(phrases, url_prefix="/phrases")
 
-    @app.route("/", methods=["GET"])
-    def root():
-        """Redirect the root page to the default blueprint"""
-        return redirect("/hello")
 
+
+    
     log.info(app.url_map)

@@ -19,11 +19,11 @@ config-hook:
 #### reconfigure_ask asks the user a question to set the variable into the .env file, and with a provided default value.
 #### reconfigure sets the value of a variable in the .env file without asking.
 #### reconfigure_htpasswd will configure the HTTP Basic Authentication setting the var name and with a provided default value.
-	@${BIN}/reconfigure_ask ${ENV_FILE} FLASK_TEMPLATE_TRAEFIK_HOST "Enter the flask-template domain name" flask-template${INSTANCE_URL_SUFFIX}.${ROOT_DOMAIN}
-	@${BIN}/reconfigure ${ENV_FILE} FLASK_TEMPLATE_INSTANCE=$${instance:-default}
+	@${BIN}/reconfigure_ask ${ENV_FILE} CW_TRAEFIK_HOST "Enter the flask-template domain name" flask-template${INSTANCE_URL_SUFFIX}.${ROOT_DOMAIN}
+	@${BIN}/reconfigure ${ENV_FILE} CW_INSTANCE=$${instance:-default}
 	@${BIN}/reconfigure_auth ${ENV_FILE} FLASK_TEMPLATE
-	@[[ -z "$$(${BIN}/dotenv -f ${ENV_FILE} get FLASK_TEMPLATE_POSTGRES_PASSWORD)" ]] && ${BIN}/reconfigure ${ENV_FILE} FLASK_TEMPLATE_POSTGRES_PASSWORD=$$(openssl rand -base64 45) || true
-	@${BIN}/reconfigure_ask ${ENV_FILE} FLASK_TEMPLATE_API_CORS_WHITELIST "Enter the CORS domain names to allow to access the API (comma separated; * to allow any domain;)"
+	@[[ -z "$$(${BIN}/dotenv -f ${ENV_FILE} get CW_POSTGRES_PASSWORD)" ]] && ${BIN}/reconfigure ${ENV_FILE} CW_POSTGRES_PASSWORD=$$(openssl rand -base64 45) || true
+	@${BIN}/reconfigure_ask ${ENV_FILE} CW_API_CORS_WHITELIST "Enter the CORS domain names to allow to access the API (comma separated; * to allow any domain;)"
 	@echo ""
 
 .PHONY: override-hook
@@ -38,7 +38,7 @@ override-hook:
 ####                         # (this hardcodes the string into docker-compose.override.yaml)
 ####   name=@VARIABLE_NAME   # sets the template 'name' field to the literal string '${VARIABLE_NAME}'
 ####                         # (used for regular docker-compose expansion of env vars by name.)
-	@${BIN}/docker_compose_override ${ENV_FILE} project=:flask-template instance=@FLASK_TEMPLATE_INSTANCE traefik_host=@FLASK_TEMPLATE_TRAEFIK_HOST http_auth=FLASK_TEMPLATE_HTTP_AUTH http_auth_var=@FLASK_TEMPLATE_HTTP_AUTH ip_sourcerange=@FLASK_TEMPLATE_IP_SOURCERANGE oauth2=FLASK_TEMPLATE_OAUTH2 authorized_group=FLASK_TEMPLATE_OAUTH2_AUTHORIZED_GROUP development_mode=FLASK_TEMPLATE_DEVELOPMENT_MODE enable_mtls_auth=FLASK_TEMPLATE_MTLS_AUTH mtls_authorized_certs=FLASK_TEMPLATE_MTLS_AUTHORIZED_CERTS api_cors_whitelist=FLASK_TEMPLATE_API_CORS_WHITELIST
+	@${BIN}/docker_compose_override ${ENV_FILE} project=:flask-template instance=@CW_INSTANCE traefik_host=@CW_TRAEFIK_HOST http_auth=CW_HTTP_AUTH http_auth_var=@CW_HTTP_AUTH ip_sourcerange=@CW_IP_SOURCERANGE oauth2=CW_OAUTH2 authorized_group=CW_OAUTH2_AUTHORIZED_GROUP development_mode=CW_DEVELOPMENT_MODE enable_mtls_auth=CW_MTLS_AUTH mtls_authorized_certs=CW_MTLS_AUTHORIZED_CERTS api_cors_whitelist=CW_API_CORS_WHITELIST
 
 .PHONY: shell # Enter shell of api container (or set service=name to enter a different one)
 shell:
@@ -57,13 +57,13 @@ local-db: localdb
 
 .PHONY: psql # Start psql shell directly inside the database container
 psql:
-	@make --no-print-directory docker-compose-shell SERVICE=database COMMAND="psql -d $$(${BIN}/dotenv -f ${ENV_FILE} get FLASK_TEMPLATE_POSTGRES_DATABASE) -U $$(${BIN}/dotenv -f ${ENV_FILE} get FLASK_TEMPLATE_POSTGRES_USER)"
+	@make --no-print-directory docker-compose-shell SERVICE=database COMMAND="psql -d $$(${BIN}/dotenv -f ${ENV_FILE} get CW_POSTGRES_DATABASE) -U $$(${BIN}/dotenv -f ${ENV_FILE} get CW_POSTGRES_USER)"
 
 .PHONY: drop-db # Drop and reinitialize entire database (only allowed if DEV_MODE=true and if all clients are disconnected)
 drop-db:
-	@test "$$(${BIN}/dotenv -f ${ENV_FILE} get FLASK_TEMPLATE_DEV_MODE)" != "true" && echo "Refusing to drop tables because the deployment is not in DEV mode." && exit 1 || true
+	@test "$$(${BIN}/dotenv -f ${ENV_FILE} get CW_DEV_MODE)" != "true" && echo "Refusing to drop tables because the deployment is not in DEV mode." && exit 1 || true
 	@${BIN}/confirm no "Are you sure you want to DESTROY the entire database" "?"
-	@POSTGRES_DATABASE="$$(${BIN}/dotenv -f ${ENV_FILE} get FLASK_TEMPLATE_POSTGRES_DATABASE)" && ${MAKE} shell service=database COMMAND="dropdb -U $$POSTGRES_DATABASE $$POSTGRES_DATABASE && createdb -U $$POSTGRES_DATABASE $$POSTGRES_DATABASE"
+	@POSTGRES_DATABASE="$$(${BIN}/dotenv -f ${ENV_FILE} get CW_POSTGRES_DATABASE)" && ${MAKE} shell service=database COMMAND="dropdb -U $$POSTGRES_DATABASE $$POSTGRES_DATABASE && createdb -U $$POSTGRES_DATABASE $$POSTGRES_DATABASE"
 	@echo
 	@echo "Database dropped and reinitialized to a blank state."
 	@echo

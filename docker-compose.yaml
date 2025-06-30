@@ -10,21 +10,21 @@ services:
     build:
       context: api
       args:
-        UID: ${FLASK_TEMPLATE_UID}
-        GID: ${FLASK_TEMPLATE_GID}
+        UID: ${CW_UID}
+        GID: ${CW_GID}
     ## user is optional, it overrides the USER of the Dockerfile
-    user: ${FLASK_TEMPLATE_UID}:${FLASK_TEMPLATE_GID}
+    user: ${CW_UID}:${CW_GID}
     environment:
       - PGHOST=database
       - PGPORT=5432
-      - PGDATABASE=${FLASK_TEMPLATE_POSTGRES_DATABASE}
-      - PGUSER=${FLASK_TEMPLATE_POSTGRES_USER}
-      - PGPASSWORD=${FLASK_TEMPLATE_POSTGRES_PASSWORD}
+      - PGDATABASE=${CW_POSTGRES_DATABASE}
+      - PGUSER=${CW_POSTGRES_USER}
+      - PGPASSWORD=${CW_POSTGRES_PASSWORD}
       - DOCKER_PROJECT=
-      - API_UPLOAD_FOLDER=${FLASK_TEMPLATE_API_UPLOAD_FOLDER}
-      - API_LOG_LEVEL=${FLASK_TEMPLATE_API_LOG_LEVEL}
+      - API_UPLOAD_FOLDER=${CW_API_UPLOAD_FOLDER}
+      - API_LOG_LEVEL=${CW_API_LOG_LEVEL}
     volumes:
-      - uploads:${FLASK_TEMPLATE_API_UPLOAD_FOLDER}
+      - uploads:${CW_API_UPLOAD_FOLDER}
     networks:
       - default
 
@@ -34,9 +34,9 @@ services:
     profiles: ['default']
     image: postgres:16
     environment:
-      - POSTGRES_PASSWORD=${FLASK_TEMPLATE_POSTGRES_PASSWORD}
-      - POSTGRES_USER=${FLASK_TEMPLATE_POSTGRES_USER}
-      - POSTGRES_DB=${FLASK_TEMPLATE_POSTGRES_DATABASE}
+      - POSTGRES_PASSWORD=${CW_POSTGRES_PASSWORD}
+      - POSTGRES_USER=${CW_POSTGRES_USER}
+      - POSTGRES_DB=${CW_POSTGRES_DATABASE}
     volumes:
       - database:/var/lib/postgresql/data
     healthcheck:
@@ -51,18 +51,18 @@ services:
       dockerfile: Dockerfile.test
       args:
         IMAGE: flask-template-api
-        UID: ${FLASK_TEMPLATE_UID}
-        GID: ${FLASK_TEMPLATE_GID}
+        UID: ${CW_UID}
+        GID: ${CW_GID}
     ## user is optional, it overrides the USER of the Dockerfile
-    user: ${FLASK_TEMPLATE_UID}:${FLASK_TEMPLATE_GID}
+    user: ${CW_UID}:${CW_GID}
     environment:
       - PGHOST=database-test
       - PGPORT=5432
-      - PGDATABASE=${FLASK_TEMPLATE_POSTGRES_DATABASE}
-      - PGUSER=${FLASK_TEMPLATE_POSTGRES_USER}
-      - PGPASSWORD=${FLASK_TEMPLATE_POSTGRES_PASSWORD}
+      - PGDATABASE=${CW_POSTGRES_DATABASE}
+      - PGUSER=${CW_POSTGRES_USER}
+      - PGPASSWORD=${CW_POSTGRES_PASSWORD}
       - DOCKER_PROJECT=
-      - API_LOG_LEVEL=${FLASK_TEMPLATE_API_LOG_LEVEL}
+      - API_LOG_LEVEL=${CW_API_LOG_LEVEL}
     depends_on:
       - database-test
     networks:
@@ -74,9 +74,9 @@ services:
     profiles: ['test']
     image: postgres:16
     environment:
-      - POSTGRES_PASSWORD=${FLASK_TEMPLATE_POSTGRES_PASSWORD}
-      - POSTGRES_USER=${FLASK_TEMPLATE_POSTGRES_USER}
-      - POSTGRES_DB=${FLASK_TEMPLATE_POSTGRES_DATABASE}
+      - POSTGRES_PASSWORD=${CW_POSTGRES_PASSWORD}
+      - POSTGRES_USER=${CW_POSTGRES_USER}
+      - POSTGRES_DB=${CW_POSTGRES_DATABASE}
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
     networks:

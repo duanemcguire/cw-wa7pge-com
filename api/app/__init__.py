@@ -24,6 +24,8 @@ log = logging.getLogger("app")
 info = Info(title="my API", version="1.0.0")
 app = OpenAPI(__name__, info=info)
 
+
+
 app.secret_key = APP_SECRET_KEY
 
 setup_routes(app)

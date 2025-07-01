@@ -1,14 +1,17 @@
-from flask import Flask, render_template, request, current_app
-import os, sys
+from flask import render_template, request
+import os
 import random
-import logging
 from flask import Blueprint
-
 phrases = Blueprint('phrases', __name__)
-TEXT_FOLDER = '/static/text_files'
 
 @phrases.route('/song-titles', methods=['GET', 'POST'])
 def songtitles():
+
+    
+    current_file = os.path.abspath(__file__)
+    current_dir = os.path.dirname(current_file)
+    os.chdir(current_dir)
+    TEXT_FOLDER = "text_files"
     files = sorted([f for f in os.listdir(TEXT_FOLDER)])
     selected_file = request.form.get('filename')
     wpm = request.form.get('wpm')
@@ -36,6 +39,11 @@ def songtitles():
 
 @phrases.route('/song-titles-sending', methods=['GET', 'POST'])
 def song_titles_sending():
+    current_file = os.path.abspath(__file__)
+    current_dir = os.path.dirname(current_file)
+    os.chdir(current_dir)
+    TEXT_FOLDER = "text_files"
+
     files = sorted([f for f in os.listdir(TEXT_FOLDER)])
     selected_file = request.form.get('filename')
     line = None

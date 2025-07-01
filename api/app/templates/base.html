@@ -35,17 +35,21 @@
 							<ul>
 								<li><a href="{{ url_for('main.index') }}">Home</a></li>
 								<li><a href="{{ url_for('phrases.songtitles')}}">Song Titles</a></li>
+								<li><a href="{{ url_for('callsigns.index')}}">Callsign Trainer</a></li>
+								<li><a href="{{ url_for('books.index')}}">Winnie The Pooh</a></li>
 
 							</ul>
 						</nav>
 						<nav class="main">
 							<ul>
+								<!--
 								<li class="search">
 									<a class="fa-search" href="#search">Search</a>
 									<form id="search" method="get" action="#">
 										<input type="text" name="query" placeholder="Search" />
 									</form>
 								</li>
+								-->
 								<li class="menu">
 									<a class="fa-bars" href="#menu">Menu</a>
 								</li>
@@ -57,12 +61,12 @@
 					<section id="menu">
 
 						<!-- Search -->
-							<section>
+						 <!--<section>
 								<form class="search" method="get" action="#">
 									<input type="text" name="query" placeholder="Search" />
 								</form>
 							</section>
-
+						-->		
 						<!-- Links -->
 							<section>
 								<ul class="links">
@@ -72,9 +76,19 @@
 										<p>Copy Practice with song titles</p>
 										</a>
 									</li>
-
-
-									
+									<li>
+										<a href="{{ url_for('callsigns.index')}}">
+										<h3>Callsigns</h3>
+										<p>Copy Practice with callsigns</p>
+										</a>
+									</li>
+																		<li>
+										<a href="{{ url_for('books.index')}}">
+										<h3>Winnie The Pooh</h3>
+										<p>Listen to Winnie The Pooh, a page at a time</p>
+										</a>
+									</li>
+							
 								</ul>
 							</section>
 

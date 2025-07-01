@@ -46,6 +46,7 @@ def song_titles_sending():
 
     files = sorted([f for f in os.listdir(TEXT_FOLDER)])
     selected_file = request.form.get('filename')
+
     line = None
 
     if selected_file:

@@ -1,11 +1,11 @@
-{% extends 'base.html' %}
+{% extends 'editorial-base.html' %}
     
 {% block content %}
     
     <h1>A song title from the ages</h1>
-    <form method="POST">
+    <form method="POST" >
         
-        Collection: <select name="filename">
+        Collection: <select name="filename" style="max-width: 200px;">
             {% for file in files %}
                 <option value="{{ file }}" {% if file == selected_file %}selected{% endif %}>{{ file }}</option>
             {% endfor %}
@@ -17,8 +17,7 @@
 
     {% if line %}
         <div class="line-display">
-            <p>Your song from {{ selected_file }}:</p>
-            <p><strong>{{ line }}</p></div></strong></p>
+            <p><strong>{{ line }}</strong></p>
         </div>
     {% endif %}
 

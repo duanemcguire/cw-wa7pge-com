@@ -41,6 +41,5 @@ def main():
     )
     app.run(host=HTTP_HOST, port=HTTP_PORT, debug=(DEPLOYMENT == "dev"))
 
-
 if __name__ == "__main__":
     main()

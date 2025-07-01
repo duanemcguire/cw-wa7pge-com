@@ -1,4 +1,4 @@
-{% extends 'base.html' %}
+{% extends 'editorial-base.html' %}
     
 {% block content %}
     
@@ -30,7 +30,7 @@
 </script>
 <body>
     <h1>CW Copy Practice<BR>A song title from the ages</h1>
-    <form method="POST">
+    <form method="POST" action="/phrases/song-titles">
         WPM: 
         <select name="wpm" id="wpm" style="width: 95px;" >
             {% for wpmo in wpm_options %}
@@ -48,10 +48,9 @@
     </form>
 
     {% if line %}
-        <div class="line-display">
+        
             <button onclick="play_cw()">Play the CW</button>
             <button onclick="display_title()">Reveal the song title</button>
-            <div id="reveal_title" style="display:none;"></div>    
-        </div>
+            <div class="line-display" id="reveal_title" style="display:none;"></div>    
     {% endif %}
 {% endblock %}    

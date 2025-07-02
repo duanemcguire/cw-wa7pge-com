@@ -46,12 +46,16 @@ def song_titles_sending():
 
     categories = sorted([f for f in os.listdir(TEXT_FOLDER)])
     selected_category = request.form.get('category')
+    selected_file = request.form.get('filename')
+    
 
     if selected_category:
         line = None
+        category_dir = os.path.join(TEXT_FOLDER, selected_category)
+        files = sorted([f for f in os.listdir(category_dir)])
 
         if selected_file:
-            file_path = os.path.join(TEXT_FOLDER, selected_file)
+            file_path = os.path.join(category_dir, selected_file)
             try:
                 with open(file_path, 'r') as f:
                     lines = f.readlines()

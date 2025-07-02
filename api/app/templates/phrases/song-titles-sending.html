@@ -5,7 +5,13 @@
     <h2>Song Title Sending Practice</h2>
 
     <form method="POST" >
-        
+        Category: <select name="category" style="max-width: 200px;">
+            {% for category in categories %}
+                <option value="{{ category }}" {% if category == selected_category %}selected{% endif %}>{{ category }}</option>
+            {% endfor %}
+        </select>
+
+
         Collection: <select name="filename" style="max-width: 200px;">
             {% for file in files %}
                 <option value="{{ file }}" {% if file == selected_file %}selected{% endif %}>{{ file }}</option>

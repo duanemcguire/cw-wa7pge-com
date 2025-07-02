@@ -11,7 +11,7 @@ def songtitles():
     current_file = os.path.abspath(__file__)
     current_dir = os.path.dirname(current_file)
     os.chdir(current_dir)
-    TEXT_FOLDER = "text_files"
+    TEXT_FOLDER = "text_files/songs"
     files = sorted([f for f in os.listdir(TEXT_FOLDER)])
     selected_file = request.form.get('filename')
     wpm = request.form.get('wpm')
@@ -42,7 +42,7 @@ def song_titles_sending():
     current_file = os.path.abspath(__file__)
     current_dir = os.path.dirname(current_file)
     os.chdir(current_dir)
-    TEXT_FOLDER = "text_files"
+    TEXT_FOLDER = "text_files/songs"
 
     files = sorted([f for f in os.listdir(TEXT_FOLDER)])
     selected_file = request.form.get('filename')

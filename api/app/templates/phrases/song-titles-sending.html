@@ -1,36 +1,51 @@
 {% extends 'editorial-base.html' %}
-    
+
 {% block content %}
-    
-    <h2>Song Title Sending Practice</h2>
 
-    <form method="POST" >
-        Category: <select name="category" style="max-width: 200px;">
-            {% for category in categories %}
-                <option value="{{ category }}" {% if category == selected_category %}selected{% endif %}>{{ category }}</option>
-            {% endfor %}
-        </select>
+<h2>Phrase Sending Practice</h2>
 
-
-        Collection: <select name="filename" style="max-width: 200px;">
-            {% for file in files %}
-                <option value="{{ file }}" {% if file == selected_file %}selected{% endif %}>{{ file }}</option>
-            {% endfor %}
-        </select>
-        <br>
-        <button type="submit">Show a Song Title</button>
-
-    </form>
-
-    {% if line %}
-        <div class="line-display">
-            <p><strong>{{ line }}</strong></p>
-        </div>
-    {% endif %}
-    <hr>
-    <DIV>
-        Note: This page was designed for group interaction in my zoom class.   Each student can have their own copy of this page up in a browser window.  The student can then choose a random song title to send when it is their turn to send CW.
-    </DIV>    
+<form method="POST" id='theForm'>
+    Category: <select name="category" id='category' style="max-width: 200px;">
+        {% for category in categories %}
+        <option value="{{ category }}" {% if category==selected_category %}selected{% endif %}>{{ category }}</option>
+        {% endfor %}
+    </select>
 
 
-    {% endblock %}    
+    Collection: <select name="filename" style="max-width: 200px;">
+        {%if files %}
+        {% for file in files %}
+        <option value="{{ file }}" {% if file==selected_file %}selected{% endif %}>{{ file }}</option>
+        {% endfor %}
+        {% endif %}
+    </select>
+    <br>
+    <button type="submit">Show a {{selected_category}}</button>
+    <input type="hidden" name="newCategory" id="newCategory" value = "0">
+</form >
+
+{% if line %}
+<div class="line-display">
+    <p><strong>{{ line }}</strong></p>
+</div>
+{% endif %}
+<hr>
+<DIV>
+    Note: This page was designed for group interaction in my zoom class. Each student can have their own copy of this
+    page up in a browser window. The student can then choose a random song title to send when it is their turn to send
+    CW.
+</DIV>
+
+<SCRIPT>
+    category = document.getElementById('category');
+    category.addEventListener('change', () => {
+        newCategory = document.getElementById('newCategory');
+        newCategory.value = 1;        
+        const form = document.getElementById('theForm')
+        form.submit();
+    });
+</SCRIPT>
+
+
+
+{% endblock %}

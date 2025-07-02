@@ -2,6 +2,12 @@ from flask import render_template, request
 import os
 import random
 from flask import Blueprint
+import logging
+log =  logging.getLogger(__name__)
+
+
+
+
 phrases = Blueprint('phrases', __name__)
 
 @phrases.route('/song-titles', methods=['GET', 'POST'])
@@ -18,6 +24,7 @@ def songtitles():
     wpm_options = [12,14,16,18,20,25,30,40]
     line = None
 
+    
     if selected_file:
         file_path = os.path.join(TEXT_FOLDER, selected_file)
         try:
@@ -42,27 +49,33 @@ def song_titles_sending():
     current_file = os.path.abspath(__file__)
     current_dir = os.path.dirname(current_file)
     os.chdir(current_dir)
-    TEXT_FOLDER = "text_files/songs"
+    TEXT_FOLDER = "text_files"
 
+    log.debug(request.form)
     categories = sorted([f for f in os.listdir(TEXT_FOLDER)])
     selected_category = request.form.get('category')
     selected_file = request.form.get('filename')
-    
+    newCategory = request.form.get('newCategory')
+    if newCategory == "1":
+        selected_file = None
+    if not selected_category:
+        selected_category = categories[0];
+    log.debug(f"selected_category: {selected_category}")
 
-    if selected_category:
-        line = None
-        category_dir = os.path.join(TEXT_FOLDER, selected_category)
-        files = sorted([f for f in os.listdir(category_dir)])
-
-        if selected_file:
-            file_path = os.path.join(category_dir, selected_file)
-            try:
-                with open(file_path, 'r') as f:
-                    lines = f.readlines()
-                    if lines:
-                        line = random.choice(lines).strip()
-            except Exception as e:
-                line = f"Error reading file: {e}"
+    files=None
+    line=None
+    category_dir = os.path.join(TEXT_FOLDER, selected_category)
+    files = sorted([f for f in os.listdir(category_dir)])
+    log.debug(f"selected_file: {selected_file}")
+    if selected_file:
+        file_path = os.path.join(category_dir, selected_file)
+        try:
+            with open(file_path, 'r') as f:
+                lines = f.readlines()
+                if lines:
+                    line = random.choice(lines).strip()
+        except Exception as e:
+            line = f"Error reading file: {e}"
 
     return render_template('phrases/song-titles-sending.html', 
         categories=categories,

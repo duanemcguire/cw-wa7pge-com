@@ -29,8 +29,10 @@
         }
 </script>
 <body>
-    <h2>Song Title Copy Practice</h2>
-    <form method="POST" action="/phrases/song-titles">
+    <h2>Phrase Copy Practice</h2>
+    
+
+    <form method="POST" id='theForm'>
         WPM: 
         <select name="wpm" id="wpm" style="width: 95px;" >
             {% for wpmo in wpm_options %}
@@ -38,19 +40,37 @@
             {% endfor %}
         </select><BR>
 
+        Category: <select name="category" id='category' style="max-width: 200px;">
+            {% for category in categories %}
+            <option value="{{ category }}" {% if category==selected_category %}selected{% endif %}>{{ category }}</option>
+            {% endfor %}
+        </select>        
+
         Collection: <select name="filename" style="width: 200px;">
             {% for file in files %}
                 <option value="{{ file }}" {% if file == selected_file %}selected{% endif %}>{{ file }}</option>
             {% endfor %}
         </select>
 	<br>
-        <button type="submit">Get a Song Title</button>
+        <button type="submit">Get a {{selected_category}}</button>
+        <input type="hidden" name="newCategory" id="newCategory" value = "0">
+
     </form>
 
     {% if line %}
         
             <button onclick="play_cw()">Play the CW</button>
-            <button onclick="display_title()">Reveal the song title</button>
+            <button onclick="display_title()">Reveal the {{selected_category}}</button>
             <div class="line-display" id="reveal_title" style="display:none;"></div>    
     {% endif %}
+
+<SCRIPT>
+    category = document.getElementById('category');
+    category.addEventListener('change', () => {
+        newCategory = document.getElementById('newCategory');
+        newCategory.value = 1;        
+        const form = document.getElementById('theForm')
+        form.submit();
+    });
+</SCRIPT>    
 {% endblock %}    

@@ -17,28 +17,44 @@ def songtitles():
     current_file = os.path.abspath(__file__)
     current_dir = os.path.dirname(current_file)
     os.chdir(current_dir)
-    TEXT_FOLDER = "text_files/songs"
-    files = sorted([f for f in os.listdir(TEXT_FOLDER)])
-    selected_file = request.form.get('filename')
+    TEXT_FOLDER = "text_files"
+
     wpm = request.form.get('wpm')
     wpm_options = [12,14,16,18,20,25,30,40]
-    line = None
+    categories = sorted([f for f in os.listdir(TEXT_FOLDER)])
+    log.debug(f"categories: {categories}")
+    selected_category = request.form.get('category')
+    selected_file = request.form.get('filename')
+    newCategory = request.form.get('newCategory')
+    if newCategory == "1":
+        selected_file = None
+    if not selected_category:
+        selected_category = categories[0];
 
-    
+    files=None
+    line=None
+    category_dir = os.path.join(TEXT_FOLDER, selected_category)
+    files = sorted([f for f in os.listdir(category_dir)])
     if selected_file:
-        file_path = os.path.join(TEXT_FOLDER, selected_file)
+        file_path = os.path.join(category_dir, selected_file)
         try:
             with open(file_path, 'r') as f:
                 lines = f.readlines()
                 if lines:
                     line = random.choice(lines).strip()
+                    line = line.replace("("," = ")
+                    line = line.replace(")"," = ")
+                    line = line.replace("’","'")
+                    line = line.replace("&"," and ")
         except Exception as e:
             line = f"Error reading file: {e}"
 
     return render_template('phrases/song-cw-titles.html',
                            wpm_options=wpm_options, 
                            wpm=wpm, 
-                           files=files, 
+                           files=files,
+                           categories=categories,
+                           selected_category=selected_category, 
                            selected_file=selected_file, 
                            line=line)
 
@@ -51,7 +67,6 @@ def song_titles_sending():
     os.chdir(current_dir)
     TEXT_FOLDER = "text_files"
 
-    log.debug(request.form)
     categories = sorted([f for f in os.listdir(TEXT_FOLDER)])
     selected_category = request.form.get('category')
     selected_file = request.form.get('filename')
@@ -60,7 +75,6 @@ def song_titles_sending():
         selected_file = None
     if not selected_category:
         selected_category = categories[0];
-    log.debug(f"selected_category: {selected_category}")
 
     files=None
     line=None
@@ -74,6 +88,10 @@ def song_titles_sending():
                 lines = f.readlines()
                 if lines:
                     line = random.choice(lines).strip()
+                    line = line.replace("("," = ")
+                    line = line.replace(")"," = ")
+                    line = line.replace("’","'")
+                    line = line.replace("&"," and ")
         except Exception as e:
             line = f"Error reading file: {e}"
 

@@ -155,3 +155,21 @@
 
 	</body>
 </html>
+<script>
+$(document).ready(function () {
+	$("#showSidebar").on("click", function () {
+		el = document.getElementById('sidebar');
+		r = el.getBoundingClientRect();
+		console.log(el)
+		console.log(r)
+		el.style.position = 'absolute'
+		console.log(el.style.position)
+		el.style.left = '0px';
+		el.style.x = '0px';
+		el.classList.remove('inactive')
+		r = el.getBoundingClientRect();
+		console.log(el)
+		console.log(r)
+	});
+});
+</script>

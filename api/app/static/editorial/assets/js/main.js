@@ -89,6 +89,7 @@
 					.appendTo($head);
 
 		// Toggle.
+				
 			$('<a href="#sidebar" class="toggle">Toggle</a>')
 				.appendTo($sidebar)
 				.on('click', function(event) {
@@ -258,5 +259,6 @@
 				});
 
 			});
+			
 
 })(jQuery);

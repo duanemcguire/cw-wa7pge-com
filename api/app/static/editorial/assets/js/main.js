@@ -260,5 +260,24 @@
 
 			});
 			
+// DM special
+
+	if (breakpoints.active('>large')){
+		$("#pShowSidebar").hide()	
+	}else{
+		$("#pShowSidebar").show()	
+	}
+	$("#showSidebar").on('click', function(event) {
+
+	// Prevent default.
+		event.preventDefault();
+		event.stopPropagation();
+	
+		// Toggle.
+		$sidebar.toggleClass('inactive');
+	});
+
+
+
 
 })(jQuery);

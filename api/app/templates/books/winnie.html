@@ -6,7 +6,7 @@
 
   <h2>Winnie The Pooh CW</h2>
   <div class="optionContainer">
-    <table style="max-width: 500px;">
+    <table style="max-width: 400px;">
     <tr>  
     <td>WPM</td>
     <td>
@@ -24,18 +24,20 @@
     <tr>
       <td>Page</td>
       <td>
-      <select name="wpage" id="wpage">
-        <option value=""></option>
+      <select name="wpage" id="wpage" >
+        <option value="">Select a page</option>
       </select>
       </td>
     </tr>
   </table>  
   </div>
   <div>
-    <audio id="cwPlayer" controls></audio><BR>
-    <button id="viewText">View the Text</button> <button id="hideText" style="visibility: hidden;">Hide the Text</button>
- </div> 
-  <iframe id="textFrame" src="" style="width: 100%; height: 400px; visibility: hidden;" ></iframe>
+    <audio id="cwPlayer" controls style="visibility: hidden"></audio><BR>
+    <button id="viewText" style="visibility: hidden">View the Text</button> 
+    <button id="hideText" style="visibility: hidden;">Hide the Text</button>
+ </div>
+ <BR> 
+  <iframe id="textFrame" src="" scrolling="auto" style="max-width: 600px; width:100%; height: 400px; visibility: hidden;" ></iframe>
   
   <script>
     const select = document.getElementById('wpage');
@@ -74,6 +76,8 @@
       if (pagevalue) {
         wpmvalue = wpm.value;
         audio.src = mp3Prefix + wpmvalue + "wpm-page-"  + pagevalue + ".mp3";
+        audio.style.visibility = 'visible'
+        buttonViewText.style.visibility = 'visible'
         console.log(audio.src)
         audio.play();
         srcFile = "https://duanemcguire.nyc3.cdn.digitaloceanspaces.com/cw-books/winnie-the-pooh/winnie_paginated_paragraphs.html";

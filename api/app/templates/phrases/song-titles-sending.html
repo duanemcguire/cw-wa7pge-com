@@ -2,7 +2,8 @@
     
 {% block content %}
     
-    <h1>A song title from the ages</h1>
+    <h2>Song Title Sending Practice</h2>
+
     <form method="POST" >
         
         Collection: <select name="filename" style="max-width: 200px;">
@@ -20,7 +21,10 @@
             <p><strong>{{ line }}</strong></p>
         </div>
     {% endif %}
+    <hr>
+    <DIV>
+        Note: This page was designed for group interaction in my zoom class.   Each student can have their own copy of this page up in a browser window.  The student can then choose a random song title to send when it is their turn to send CW.
+    </DIV>    
 
-    <BR><BR>
-    <a href="/phrases/song-titles">Copy practice with these titles</a>
-{% endblock %}    
+
+    {% endblock %}    

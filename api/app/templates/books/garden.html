@@ -1,0 +1,121 @@
+{% extends 'editorial-base.html' %}
+
+
+{% block content %}
+
+
+  <h2>A Child's Garden of Verses CW</h2>
+  <div class="optionContainer">
+    <form id="theForm" method="post">
+    <table style="max-width: 400px;">
+    <tr>  
+    <td>WPM</td>
+    <td>
+    <select name="wpm" id="wpm">
+      {% for wpm in ["12","15","18","20","25","30","40"] %}
+        <option value="{{wpm}}" {%if wpm in selectedWPM %}selected{% endif %}>{{wpm}}</option>
+      {% endfor %}
+    </select>
+    </td>
+    </tr>
+    <tr>
+      <td>Verse</td>
+      <td>
+      <select name="verseSelect" id="verseSelect" >
+        <option value="">Select a verse</option>
+        {%for verse in verses %}
+        {% set selected="" %}
+        {% if selectedVerse == verse[0] %}
+          {% set selected = "selected" %}  
+        {% endif %}  
+        <option value="{{verse[0]}}" {{selected}}>{{verse[1]}}</option>
+        {% endfor %}
+      </select>
+      </td>
+    </tr>
+  </table>
+  </form> 
+  </div>
+  <div>
+    <button id="buttonPlayCW" style="visibility: hidden">Play the CW</button> 
+    <button id="buttonPauseCW" style="visibility: hidden">Pause</button>
+    <button id="viewText" style="visibility: hidden">View the Text</button> 
+    <button id="hideText" style="visibility: hidden;">Hide the Text</button>
+ </div>
+ <BR> 
+  <div id="textDiv" style="visibility: hidden; 
+      overflow: scroll; 
+      border: 1px solid black; 
+      max-width: 600px; 
+      width:100%; height: 
+      400px; " >
+    <PRE style="padding: 10px; font-size: 1.1em; font-family:Arial, Helvetica, sans-serif">{{verseText}}</PRE>
+  </div>
+  
+  <script>
+    let prefix = 'VVV  '
+    const player = new jscw();
+    player.init();
+    function playCW(text){
+        wpmEl = document.getElementById('wpm')
+        speed = wpmEl.options[wpmEl.selectedIndex].value
+        player.stop();
+        player.init();
+        player.setWpm(speed);
+        player.setFreq(600);
+        player.setStartDelay(1);
+        player.play(prefix + text);
+        prefix = ""
+    }
+    const select = document.getElementById('verseSelect');
+    const wpm = document.getElementById('wpm') 
+    const buttonViewText = document.getElementById('viewText');
+    const buttonHideText = document.getElementById('hideText');
+    const verseText = document.getElementById('textDiv').innerText;
+    var wpmvalue = 20
+    buttonViewText.addEventListener('click', function(){
+      pagevalue = select.value;
+      textDiv.style.visibility = 'visible';
+      buttonHideText.style.visibility = 'visible';
+    })
+    buttonPlayCW.addEventListener('click', function(){
+      playCW("{{verseCW}}");
+      document.getElementById('buttonPauseCW').style.visibility = 'visible';
+    })
+    buttonPauseCW.addEventListener('click', function(){
+      player.pause()
+      if (buttonPauseCW.innerText == "PAUSE"){
+        buttonPauseCW.innerText = "Continue";
+      }else{
+        buttonPauseCW.innerText = "PAUSE";  
+      }
+    })
+    buttonHideText.addEventListener('click', function(){
+      textDiv.style.visibility = 'hidden';
+      buttonHideText.style.visibility = 'hidden';
+    })
+    select.addEventListener('change', () => {
+      pagevalue = select.value;
+      if (pagevalue > "") {
+        document.getElementById("theForm").submit()
+      }
+    })
+    document.getElementById('wpm').addEventListener('change', () => {
+      playCW("{{verseCW}}");
+      document.getElementById('buttonPauseCW').style.visibility = 'visible';
+
+    })    
+    document.addEventListener('DOMContentLoaded', function() {
+        // Code to execute once the DOM is ready
+        {%if selectedVerse %}
+          document.getElementById('viewText').style.visibility = 'visible';
+          document.getElementById('buttonPlayCW').style.visibility = 'visible';
+          document.getElementById('buttonPauseCW').style.visibility = 'hidden';
+
+        {% endif %}   
+});
+</script>
+  
+  {% endblock %}  
+  
+  

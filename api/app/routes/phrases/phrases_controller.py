@@ -88,8 +88,6 @@ def song_titles_sending():
                 lines = f.readlines()
                 if lines:
                     line = random.choice(lines).strip()
-                    line = line.replace("("," = ")
-                    line = line.replace(")"," = ")
                     line = line.replace("’","'")
                     line = line.replace("&"," and ")
         except Exception as e:

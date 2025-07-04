@@ -26,7 +26,7 @@
 
 {% if line %}
 <div class="line-display">
-    <p><strong>{{ line }}</strong></p>
+    <p><strong>{{ line | safe }}</strong></p>
 </div>
 {% endif %}
 <hr>

@@ -11,6 +11,22 @@ def simplify_accents(text):
     nfkd_form = unicodedata.normalize('NFKD', text)
     return "".join([c for c in nfkd_form if not unicodedata.combining(c)])
 
+def simplify_cw_line(line):
+    line = line.replace("("," = ")
+    line = line.replace(")"," = ")
+    line = line.replace("’","'")
+    line = line.replace("&"," and ")
+    line = line.replace("~"," ")
+    line = simplify_accents(line)
+    return line
+
+
+def simplify_display_line(line):
+    line = line.replace("’","'")
+    line = line.replace("~","<BR/>")
+    line = simplify_accents(line)
+    return line
+
 
 
 phrases = Blueprint('phrases', __name__)
@@ -40,11 +56,7 @@ def songtitles():
         try:
             with open(file_path, 'r') as f:
                 for line in f:    
-                    line = line.replace("("," = ")
-                    line = line.replace(")"," = ")
-                    line = line.replace("’","'")
-                    line = line.replace("&"," and ")
-                    line = simplify_accents(line)
+                    line = simplify_cw_line(line)
                     lines.append(line)
         except Exception as e:
             line = f"Error reading file: {e}"
@@ -61,12 +73,7 @@ def songtitles():
             lines=[]
             with open(file_path, 'r') as f:
                 for line in f: 
-                    log.debug(line)   
-                    line = line.replace("("," = ")
-                    line = line.replace(")"," = ")
-                    line = line.replace("’","'")
-                    line = line.replace("&"," and ")
-                    line = simplify_accents(line)
+                    line = simplify_cw_line(line)
                     lines.append(line)
         except Exception as e:
             line = f"Error reading file: {e}"
@@ -108,14 +115,13 @@ def song_titles_sending():
         try:
             with open(file_path, 'r') as f:
                 lines = f.readlines()
+                log.debug(lines)
                 if lines:
                     line = random.choice(lines).strip()
-                    line = line.replace("’","'")
-                    line = line.replace("&"," and ")
-                    line = simplify_accents(line)
+                    line = simplify_display_line(line)
         except Exception as e:
             line = f"Error reading file: {e}"
-
+    log.debug(f"line: {line}")
     return render_template('phrases/song-titles-sending.html', 
         categories=categories,
         selected_category=selected_category,

@@ -13,7 +13,6 @@ phrases = Blueprint('phrases', __name__)
 @phrases.route('/song-titles', methods=['GET', 'POST'])
 def songtitles():
 
-    
     current_file = os.path.abspath(__file__)
     current_dir = os.path.dirname(current_file)
     os.chdir(current_dir)
@@ -22,41 +21,57 @@ def songtitles():
     wpm = request.form.get('wpm')
     wpm_options = [12,14,16,18,20,25,30,40]
     categories = sorted([f for f in os.listdir(TEXT_FOLDER)])
-    log.debug(f"categories: {categories}")
-    selected_category = request.form.get('category')
-    selected_file = request.form.get('filename')
-    newCategory = request.form.get('newCategory')
-    if newCategory == "1":
-        selected_file = None
-    if not selected_category:
-        selected_category = categories[0];
-
-    files=None
-    line=None
-    category_dir = os.path.join(TEXT_FOLDER, selected_category)
-    files = sorted([f for f in os.listdir(category_dir)])
-    if selected_file:
+    if len(request.form) > 0:
+        newCategory = request.form.get('newCategory')
+        selected_category = request.form.get('category')
+        selected_file = request.form.get('filename')
+        collections_path = os.path.join(TEXT_FOLDER, selected_category)
+        collections = sorted([f for f in os.listdir(collections_path)])
+        if newCategory == "1":
+            selected_file = collections[0]
+        category_dir = os.path.join(TEXT_FOLDER, selected_category)
         file_path = os.path.join(category_dir, selected_file)
+        lines = []
         try:
             with open(file_path, 'r') as f:
-                lines = f.readlines()
-                if lines:
-                    line = random.choice(lines).strip()
+                for line in f:    
                     line = line.replace("("," = ")
                     line = line.replace(")"," = ")
                     line = line.replace("’","'")
                     line = line.replace("&"," and ")
+                    lines.append(line)
+        except Exception as e:
+            line = f"Error reading file: {e}"
+    else:
+        # form has not yet been submitted.
+        # get the first category and collection  and go with that. 
+        categories = sorted([f for f in os.listdir(TEXT_FOLDER)])
+        selected_category = categories[0]
+        collections_path = os.path.join(TEXT_FOLDER, selected_category)
+        collections = sorted([f for f in os.listdir(collections_path)])
+        selected_file = collections[0]
+        file_path = os.path.join(collections_path, selected_file)
+        try:
+            lines=[]
+            with open(file_path, 'r') as f:
+                for line in f: 
+                    log.debug(line)   
+                    line = line.replace("("," = ")
+                    line = line.replace(")"," = ")
+                    line = line.replace("’","'")
+                    line = line.replace("&"," and ")
+                    lines.append(line)
         except Exception as e:
             line = f"Error reading file: {e}"
 
     return render_template('phrases/song-cw-titles.html',
                            wpm_options=wpm_options, 
                            wpm=wpm, 
-                           files=files,
                            categories=categories,
+                           files=collections,
                            selected_category=selected_category, 
                            selected_file=selected_file, 
-                           line=line)
+                           lines=lines)
 
 
 

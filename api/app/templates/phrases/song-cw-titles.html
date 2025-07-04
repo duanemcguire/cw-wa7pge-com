@@ -2,32 +2,6 @@
     
 {% block content %}
     
- <script>
-        {% if line %}
-            let song_title =  decodeHTMLEntities("{{ line }}")
-            // play_cw(song_title)
-        {% endif %}
-        let prefix = 'VVV  '
-        function decodeHTMLEntities(text) {
-            const tempElement = document.createElement('textarea');
-            tempElement.innerHTML = text;
-            return tempElement.value;
-        }
-        function play_cw(){
-            const player = new jscw();
-            wpmEl = document.getElementById('wpm')
-            speed = wpmEl.options[wpmEl.selectedIndex].value
-            player.setWpm(speed);
-            player.setFreq(600);
-            player.setStartDelay(1);
-            player.play(prefix + song_title);
-            prefix = ""
-        }
-        function display_title(){
-            document.getElementById("reveal_title").innerText = song_title;
-            document.getElementById("reveal_title").style.display = "block";
-        }
-</script>
 <body>
     <h2>Phrase Copy Practice</h2>
     
@@ -46,31 +20,90 @@
             {% endfor %}
         </select>        
 
-        Collection: <select name="filename" style="width: 200px;">
+        Collection: <select id="selectCollection" name="filename" style="width: 200px;">
             {% for file in files %}
                 <option value="{{ file }}" {% if file == selected_file %}selected{% endif %}>{{ file }}</option>
             {% endfor %}
         </select>
 	<br>
-        <button type="submit">Get a {{selected_category}}</button>
+        
         <input type="hidden" name="newCategory" id="newCategory" value = "0">
 
     </form>
 
-    {% if line %}
-        
-            <button onclick="play_cw()">Play the CW</button>
-            <button onclick="display_title()">Reveal the {{selected_category}}</button>
-            <div class="line-display" id="reveal_title" style="display:none;"></div>    
-    {% endif %}
+    
+    <button id="buttonGetPhrase">Get a {{selected_category}}</button><BR><BR>    
+    <button id="buttonPlayCW"  style="visibility: hidden;">Play the CW</button>
+    <button id="buttonDisplayTitle" style="visibility: hidden;">Reveal the {{selected_category}}</button>
+    <button id="buttonHideTitle" style="visibility: hidden;">Hide the {{selected_category}}</button>
+    <div class="line-display" id="reveal_title" style="display:none;"></div>    
+    
 
-<SCRIPT>
+ <script>
+    let lines = {{lines | safe}};
+    let prefix = 'VVV  '
+    let line = ''
+    const player = new jscw();
+    player.init()
+    function play_cw(text){
+        player.stop()
+        player.init()
+        wpmEl = document.getElementById('wpm')
+        speed = wpmEl.options[wpmEl.selectedIndex].value
+        player.setWpm(speed);
+        player.setFreq(600);
+        player.setStartDelay(1);
+        player.play(prefix + text);
+        prefix = ""
+    }
+    function display_title(){
+        document.getElementById("reveal_title").innerText = song_title;
+        document.getElementById("reveal_title").style.display = "block";
+    }
+    function getLine(){
+        randomIndex = Math.floor(Math.random() * lines.length);
+        line = lines[randomIndex].trim()
+        return line;
+    }
     category = document.getElementById('category');
     category.addEventListener('change', () => {
         newCategory = document.getElementById('newCategory');
         newCategory.value = 1;        
-        const form = document.getElementById('theForm')
-        form.submit();
+        theForm.submit();
+    });
+    selectCollection.addEventListener('change', () => {
+        theForm.submit();
+    });
+    buttonPlayCW.addEventListener('click', () =>{
+        play_cw(line)
+
+    });
+    buttonDisplayTitle.addEventListener('click', () => {
+        document.getElementById('reveal_title').style.display = 'block';
+        buttonHideTitle.style.visibility = 'visible';
+
+    });
+    buttonHideTitle.addEventListener('click', () => {
+        document.getElementById('reveal_title').style.display = 'none';
+        buttonHideTitle.style.visibility = 'hidden';
+        
+    });
+
+    buttonGetPhrase.addEventListener('click', () => {
+        if (lines.length > 0){
+            line = getLine()
+            play_cw(line);
+            document.getElementById('reveal_title').innerText = line;
+            buttonPlayCW.style.visibility = 'visible';
+            buttonDisplayTitle.style.visibility = 'visible';
+            buttonHideTitle.style.visibility = 'hidden';
+            document.getElementById('reveal_title').style.display = 'none';
+
+
+        }else{
+            //Submit the form to collect the lines
+            theForm.submit();
+        }
     });
 </SCRIPT>    
 {% endblock %}    

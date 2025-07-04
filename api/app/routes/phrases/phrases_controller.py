@@ -2,9 +2,14 @@ from flask import render_template, request
 import os
 import random
 from flask import Blueprint
+import unicodedata
 import logging
 log =  logging.getLogger(__name__)
 
+
+def simplify_accents(text):
+    nfkd_form = unicodedata.normalize('NFKD', text)
+    return "".join([c for c in nfkd_form if not unicodedata.combining(c)])
 
 
 
@@ -39,6 +44,7 @@ def songtitles():
                     line = line.replace(")"," = ")
                     line = line.replace("’","'")
                     line = line.replace("&"," and ")
+                    line = simplify_accents(line)
                     lines.append(line)
         except Exception as e:
             line = f"Error reading file: {e}"
@@ -60,6 +66,7 @@ def songtitles():
                     line = line.replace(")"," = ")
                     line = line.replace("’","'")
                     line = line.replace("&"," and ")
+                    line = simplify_accents(line)
                     lines.append(line)
         except Exception as e:
             line = f"Error reading file: {e}"
@@ -105,6 +112,7 @@ def song_titles_sending():
                     line = random.choice(lines).strip()
                     line = line.replace("’","'")
                     line = line.replace("&"," and ")
+                    line = simplify_accents(line)
         except Exception as e:
             line = f"Error reading file: {e}"
 

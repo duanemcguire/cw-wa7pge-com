@@ -27,13 +27,16 @@ def simplify_display_line(line):
     line = simplify_accents(line)
     return line
 
-
-
 phrases = Blueprint('phrases', __name__)
 
-@phrases.route('/song-titles', methods=['GET', 'POST'])
-def songtitles():
+## COPYING
 
+@phrases.route('/song-titles', methods=['GET', 'POST'])
+def deprecated1():
+    return songtitles()
+
+@phrases.route('/', methods=['GET', 'POST'])
+def songtitles():
     current_file = os.path.abspath(__file__)
     current_dir = os.path.dirname(current_file)
     os.chdir(current_dir)
@@ -78,7 +81,7 @@ def songtitles():
         except Exception as e:
             line = f"Error reading file: {e}"
 
-    return render_template('phrases/song-cw-titles.html',
+    return render_template('phrases/copying.html',
                            wpm_options=wpm_options, 
                            wpm=wpm, 
                            categories=categories,
@@ -88,8 +91,13 @@ def songtitles():
                            lines=lines)
 
 
+## SENDING
 
 @phrases.route('/song-titles-sending', methods=['GET', 'POST'])
+def deprecated2():
+    return song_titles_sending()
+    
+@phrases.route('/sending', methods=['GET', 'POST'])
 def song_titles_sending():
     current_file = os.path.abspath(__file__)
     current_dir = os.path.dirname(current_file)
@@ -109,20 +117,17 @@ def song_titles_sending():
     line=None
     category_dir = os.path.join(TEXT_FOLDER, selected_category)
     files = sorted([f for f in os.listdir(category_dir)])
-    log.debug(f"selected_file: {selected_file}")
     if selected_file:
         file_path = os.path.join(category_dir, selected_file)
         try:
             with open(file_path, 'r') as f:
                 lines = f.readlines()
-                log.debug(lines)
                 if lines:
                     line = random.choice(lines).strip()
                     line = simplify_display_line(line)
         except Exception as e:
             line = f"Error reading file: {e}"
-    log.debug(f"line: {line}")
-    return render_template('phrases/song-titles-sending.html', 
+    return render_template('phrases/sending.html', 
         categories=categories,
         selected_category=selected_category,
         files=files, 

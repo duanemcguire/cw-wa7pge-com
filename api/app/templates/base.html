@@ -1,133 +1,147 @@
 <!DOCTYPE HTML>
 <!--
-	Future Imperfect by HTML5 UP
+	Editorial by HTML5 UP
 	html5up.net | @ajlkn
 	Free for personal and commercial use under the CCA 3.0 license (html5up.net/license)
 -->
-{% set site_template = 'future-imperfect' %}
-
+{% set site_template = 'editorial' %}
 
 <html>
 	<head>
-        <title>{% block title %} {% endblock %} - FlaskApp</title>
+		<title>CW WA7PGE Morse Code Practice</title>
 		<meta charset="utf-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
 		<link rel="stylesheet" href="/static/{{ site_template }}/assets/css/main.css" />
+		<link rel="icon" type="image/x-icon" href="/static/images/favicon.ico">
 		<script src="https://fkurz.net/ham/jscwlib/src/jscwlib.js"></script>
 		<style>
         .line-display {
-            margin-top: 30px;
+            margin-top: 20px;
             font-size: 30px;
             color: #333;
         }
 
-		</style>
+
+
+		
+		</style>		
 	</head>
 	<body class="is-preload">
 
 		<!-- Wrapper -->
 			<div id="wrapper">
 
-				<!-- Header -->
-					<header id="header">
-						<h1><a href="/">cw.wa7pge.com</a></h1>
-						<nav class="links">
-							<ul>
-								<li><a href="{{ url_for('main.index') }}">Home</a></li>
-								<li><a href="{{ url_for('phrases.songtitles')}}">Song Titles</a></li>
-								<li><a href="{{ url_for('callsigns.index')}}">Callsign Trainer</a></li>
-								<li><a href="{{ url_for('books.index')}}">Winnie The Pooh</a></li>
-
-							</ul>
-						</nav>
-						<nav class="main">
-							<ul>
-								<!--
-								<li class="search">
-									<a class="fa-search" href="#search">Search</a>
-									<form id="search" method="get" action="#">
-										<input type="text" name="query" placeholder="Search" />
-									</form>
-								</li>
-								-->
-								<li class="menu">
-									<a class="fa-bars" href="#menu">Menu</a>
-								</li>
-							</ul>
-						</nav>
-					</header>
-
-				<!-- Menu -->
-					<section id="menu">
-
-						<!-- Search -->
-						 <!--<section>
-								<form class="search" method="get" action="#">
-									<input type="text" name="query" placeholder="Search" />
-								</form>
-							</section>
-						-->		
-						<!-- Links -->
-							<section>
-								<ul class="links">
-									<li>
-										<a href="{{ url_for('phrases.songtitles')}}">
-										<h3>Song Titles</h3>
-										<p>Copy Practice with song titles</p>
-										</a>
-									</li>
-									<li>
-										<a href="{{ url_for('callsigns.index')}}">
-										<h3>Callsigns</h3>
-										<p>Copy Practice with callsigns</p>
-										</a>
-									</li>
-																		<li>
-										<a href="{{ url_for('books.index')}}">
-										<h3>Winnie The Pooh</h3>
-										<p>Listen to Winnie The Pooh, a page at a time</p>
-										</a>
-									</li>
-							
-								</ul>
-							</section>
-
-						<!-- Actions -->
-							<section>
-								<ul class="actions stacked">
-									<li><a href="#" class="button large fit">Log In</a></li>
-								</ul>
-							</section>
-
-					</section>
-
 				<!-- Main -->
 					<div id="main">
-                        {% block content %} {% endblock %}
-					
-				<HR/>			
-				<!-- Footer -->
-					<section">
-						<!-- About -->
-							<section class="blurb">
-								<h2>About</h2>
-								<p>
-									A collection of CW practice resources from Duane, WA7PGE. 
-								</p>
-							</section>
-						<!-- Internet Presence -->
-							<section class="blurb">
-								<h2>Internet Presence</h2>
-								<ul>
-									<li><a href="https://wa7pge.com">WA7PGE</a></li>
-									<li><a href="https://blog.duanemcguire.com">Blog</a></li>
-									<li><a href="https://qrz.com/db/WA7PGE">QRZ</a></li>
-								</ul>
-							</section>
+						<div class="inner">
+
+							<!-- Header -->
+								<header id="header">
+									<a href="/" class="logo"><strong>CW WA7PGE</a>
+									<!---
+									<ul class="icons">
+										<li><a href="#" class="icon brands fa-twitter"><span class="label">Twitter</span></a></li>
+										<li><a href="#" class="icon brands fa-facebook-f"><span class="label">Facebook</span></a></li>
+										<li><a href="#" class="icon brands fa-snapchat-ghost"><span class="label">Snapchat</span></a></li>
+										<li><a href="#" class="icon brands fa-instagram"><span class="label">Instagram</span></a></li>
+										<li><a href="#" class="icon brands fa-medium-m"><span class="label">Medium</span></a></li>
+									</ul>
+									--->
+									<div class="icons">
+										<img src="/static/images/duane.png">
+									</div>
+								</header>
+
+							<!-- Content -->
+								<section>
+                        			{% block content %} {% endblock %}
+								</section>
+								
+								
 
 
-					</section>
-</div>
+
+						</div>
+					</div>
+
+				<!-- Sidebar -->
+					<div id="sidebar">
+						<div class="inner">
+
+							<!-- Search -->
+							 <!---
+								<section id="search" class="alt">
+									<form method="post" action="#">
+										<input type="text" name="query" id="query" placeholder="Search" />
+									</form>
+								</section>
+							--->		
+							<!-- Menu -->
+								<nav id="menu">
+									<header class="major">
+										<h2>Menu</h2>
+									</header>
+									<ul>
+										<li><a href="/">Home</a></li>
+										<li>
+											<span class="opener">Phrases</span>
+											<ul>
+												<li><a href="/phrases">Copy Practice</a></li>
+												<li><a href="/phrases/sending">Sending Practice</a></li>
+											</ul>
+										</li>
+										<li><a href="/callsigns/trainer">Callsign Trainer</a></li>
+										<li>
+											<span class="opener">Books</span>
+											<ul>
+												<li><a href="/books/winnie">Winnie The Pooh</a></li>
+												<li><a href="/books/garden">A Childs Garden of Verses</a></li>
+											</ul>	
+										</li>			
+
+									</ul>
+								</nav>
+								<section>
+									<header class="major">
+										<h2>About</h2>
+									</header>
+									This is a collection of Morse Code practice resources authored by Duane McGuire, WA7PGE.
+									 Morse code generation is provided by <a href="https://fkurz.net/ham/jscwlib.html">jscwlib</a>, by Fabian Kurz, DJ5CW
+								</section>
+								<section>
+									<header class="major">
+										<h2>Comments</h2>
+									</header>
+									I welcome your comments.<BR>
+									<a href="/#comments">Leave a comment here</a>	
+								</section>
+								<section>	
+									<p>Duane's Web Presence</p>
+									<ul class="contact">
+										<li class="icon solid fa-globe">
+											<a href="https://wa7pge.com">WA7PGE Ham Radio </a>
+										</li>
+										<li class="icon solid fa-globe">
+											<a href="https://blog.duanemcguire.com">Duane's Blog</a>
+										</li>
+										<li class="icon solid fa-globe">
+											<a href="https://qrz.com/db/WA7PGE">QRZ</a>
+										</li>
+										<li class="icon solid fa-globe">
+											<a href="https://pota.app/#/profile/WA7PGE">POTA</a>
+										</li>
+									</ul>
+								</section>
+
+							<!-- Footer -->
+							 <!--
+								<footer id="footer">
+									<p class="copyright">&copy; Untitled. All rights reserved. Demo Images: <a href="https://unsplash.com">Unsplash</a>. Design: <a href="https://html5up.net">HTML5 UP</a>.</p>
+								</footer>
+							-->	
+						</div>
+					</div>
+
 			</div>
 
 		<!-- Scripts -->
@@ -139,3 +153,11 @@
 
 	</body>
 </html>
+<script>
+$(document).ready(function () {
+	var $sidebar = $('#sidebar'),
+			$sidebar_inner = $sidebar.children('.inner');
+
+});
+</script>
+

@@ -62,7 +62,9 @@
     }
     function getLine(){
         randomIndex = Math.floor(Math.random() * lines.length);
-        line = lines[randomIndex].trim()
+        line = lines[randomIndex].trim().replace("~"," ")
+        line = line.replace("("," = ")
+        line = line.replace(")"," = ") 
         return line;
     }
     category = document.getElementById('category');

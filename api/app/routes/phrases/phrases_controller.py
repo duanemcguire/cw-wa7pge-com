@@ -5,6 +5,7 @@ from flask import Blueprint
 import unicodedata
 import logging
 log =  logging.getLogger(__name__)
+phrases = Blueprint('phrases', __name__)
 
 
 def simplify_accents(text):
@@ -12,11 +13,8 @@ def simplify_accents(text):
     return "".join([c for c in nfkd_form if not unicodedata.combining(c)])
 
 def simplify_cw_line(line):
-    line = line.replace("("," = ")
-    line = line.replace(")"," = ")
     line = line.replace("’","'")
     line = line.replace("&"," and ")
-    line = line.replace("~"," ")
     line = simplify_accents(line)
     return line
 
@@ -27,24 +25,15 @@ def simplify_display_line(line):
     line = simplify_accents(line)
     return line
 
-phrases = Blueprint('phrases', __name__)
-
-## COPYING
-
-@phrases.route('/song-titles', methods=['GET', 'POST'])
-def deprecated1():
-    return songtitles()
-
-@phrases.route('/', methods=['GET', 'POST'])
-def songtitles():
+def getPhraseAttr():
+    attr = {}
     current_file = os.path.abspath(__file__)
     current_dir = os.path.dirname(current_file)
     os.chdir(current_dir)
     TEXT_FOLDER = "text_files"
 
-    wpm = request.form.get('wpm')
-    wpm_options = [12,14,16,18,20,25,30,40]
     categories = sorted([f for f in os.listdir(TEXT_FOLDER)])
+    
     if len(request.form) > 0:
         newCategory = request.form.get('newCategory')
         selected_category = request.form.get('category')
@@ -80,15 +69,36 @@ def songtitles():
                     lines.append(line)
         except Exception as e:
             line = f"Error reading file: {e}"
+    attr['collections'] = collections
+    attr['categories'] = categories
+    attr['selected_category'] = selected_category
+    attr['selected_file'] = selected_file
+    attr['lines'] = lines
+    return attr
+
+
+## COPYING
+
+@phrases.route('/song-titles', methods=['GET', 'POST'])
+def deprecated1():
+    return songtitles()
+
+@phrases.route('/', methods=['GET', 'POST'])
+def songtitles():
+
+    wpm = request.form.get('wpm')
+    wpm_options = [12,14,16,18,20,25,30,40]
+
+    attr = getPhraseAttr()
 
     return render_template('phrases/copying.html',
                            wpm_options=wpm_options, 
                            wpm=wpm, 
-                           categories=categories,
-                           files=collections,
-                           selected_category=selected_category, 
-                           selected_file=selected_file, 
-                           lines=lines)
+                           categories=attr['categories'],
+                           files=attr['collections'],
+                           selected_category=attr['selected_category'], 
+                           selected_file=attr['selected_file'], 
+                           lines=attr['lines'])
 
 
 ## SENDING
@@ -98,39 +108,14 @@ def deprecated2():
     return song_titles_sending()
     
 @phrases.route('/sending', methods=['GET', 'POST'])
+
 def song_titles_sending():
-    current_file = os.path.abspath(__file__)
-    current_dir = os.path.dirname(current_file)
-    os.chdir(current_dir)
-    TEXT_FOLDER = "text_files"
+    attr = getPhraseAttr()
 
-    categories = sorted([f for f in os.listdir(TEXT_FOLDER)])
-    selected_category = request.form.get('category')
-    selected_file = request.form.get('filename')
-    newCategory = request.form.get('newCategory')
-    if newCategory == "1":
-        selected_file = None
-    if not selected_category:
-        selected_category = categories[0];
-
-    files=None
-    line=None
-    category_dir = os.path.join(TEXT_FOLDER, selected_category)
-    files = sorted([f for f in os.listdir(category_dir)])
-    if selected_file:
-        file_path = os.path.join(category_dir, selected_file)
-        try:
-            with open(file_path, 'r') as f:
-                lines = f.readlines()
-                if lines:
-                    line = random.choice(lines).strip()
-                    line = simplify_display_line(line)
-        except Exception as e:
-            line = f"Error reading file: {e}"
-    return render_template('phrases/sending.html', 
-        categories=categories,
-        selected_category=selected_category,
-        files=files, 
-        selected_file=selected_file, 
-        line=line)
+    return render_template('phrases/sending.html',
+                           categories=attr['categories'],
+                           files=attr['collections'],
+                           selected_category=attr['selected_category'], 
+                           selected_file=attr['selected_file'], 
+                           lines=attr['lines'])
 

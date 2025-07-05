@@ -12,7 +12,7 @@
     </select>
 
 
-    Collection: <select name="filename" style="max-width: 200px;">
+    Collection: <select id="selectCollection" name="filename" style="max-width: 200px;">
         {%if files %}
         {% for file in files %}
         <option value="{{ file }}" {% if file==selected_file %}selected{% endif %}>{{ file }}</option>
@@ -20,15 +20,13 @@
         {% endif %}
     </select>
     <br>
-    <button type="submit">Show a {{selected_category}}</button>
     <input type="hidden" name="newCategory" id="newCategory" value = "0">
 </form >
+<button id="buttonGetPhrase">Show a {{selected_category}}</button>
 
-{% if line %}
 <div class="line-display">
-    <p><strong>{{ line | safe }}</strong></p>
+    <strong></strong><p id="reveal_title"></p></strong>
 </div>
-{% endif %}
 <hr>
 <DIV>
     Note: This page was designed for group interaction in my zoom class. Each student can have their own copy of this
@@ -37,13 +35,41 @@
 </DIV>
 
 <SCRIPT>
+    let lines = {{lines | safe}};
+    let prefix = 'VVV  '
+    let line = ''
+
     category = document.getElementById('category');
     category.addEventListener('change', () => {
         newCategory = document.getElementById('newCategory');
         newCategory.value = 1;        
-        const form = document.getElementById('theForm')
-        form.submit();
+        theForm.submit();
     });
+
+    function display_title(){
+        document.getElementById("reveal_title").innerText = song_title;
+        document.getElementById("reveal_title").style.display = "block";
+    }
+    function getLine(){
+        randomIndex = Math.floor(Math.random() * lines.length);
+        line = lines[randomIndex].trim().replace("~","<BR>")
+        return line;
+    }
+    selectCollection.addEventListener('change', () => {
+        theForm.submit();
+    });
+    buttonGetPhrase.addEventListener('click', () => {
+        if (lines.length > 0){
+            line = getLine()
+            document.getElementById('reveal_title').innerHTML = line;
+        }else{
+            //Submit the form to collect the lines
+            theForm.submit();
+        }
+    });    
+
+
+
 </SCRIPT>
 
 

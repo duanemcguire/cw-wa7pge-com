@@ -1,0 +1,36 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<h1>7 days of LICW classes</h1>
+    <form method="POST">
+        <div style="width: 200px">
+        Calendar choices: 
+        <select name="caltype">
+            <option value="all">All</option>
+            <option value="beginner-only" {% if caltype == 'beginner-only' %} selected{% endif %}>Beginner Only</option>
+            <option value="intermediate" {% if caltype == 'intermediate' %} selected{% endif %}>Intermediate</option>
+            <option value="advanced" {% if caltype == 'advanced' %} selected{% endif %}>Advanced</option>
+        </select>
+        
+        Timezone: <select name="user_tz">
+            {%for tz in tz_choices %}
+                {% set selected = "" %}
+                {%if user_tz == tz %}
+                    {%set selected = "selected" %}
+                {% endif %}
+                <option value="{{tz}}" {{selected}}>{{tz}}</option>
+            {% endfor %}    
+        </select> 
+        
+        <input type="submit" value="Go">
+        </div>
+    </form>
+    <div class="content">
+    {%for key in calEvents %}
+        <h4 style="margin-bottom: 0px; margin-top: 10px;">{{key}}</h4>
+        {%for classtime in calEvents[key] %}
+            <div style="margin-left: 10px">{{classtime}}</div>       
+        {% endfor %}
+    {% endfor %}    
+    </div>
+{% endblock %}

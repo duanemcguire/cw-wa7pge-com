@@ -3,6 +3,7 @@ from .phrases.phrases_controller import phrases
 from .callsigns.callsigns_controller import callsigns
 from .books.books_controller import  books
 from .main.main_controller import main
+from .utility.utility_controller import utility
 from flask import redirect
 import logging
 
@@ -15,6 +16,8 @@ def setup_routes(app):
     app.register_blueprint(books, url_prefix="/books")
     app.register_blueprint(callsigns, url_prefix="/callsigns")
     app.register_blueprint(phrases, url_prefix="/phrases")
+    app.register_blueprint(utility, url_prefix="/utility")
+    
 
 
 

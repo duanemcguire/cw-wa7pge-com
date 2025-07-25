@@ -4,7 +4,7 @@
 {% block content %}
 
 
-  <h2>A Child's Garden of Verses CW</h2>
+  <h2>{{book_title}}</h2>
   <div class="optionContainer">
     <form id="theForm" method="post">
     <table style="max-width: 400px;">
@@ -12,7 +12,7 @@
     <td>WPM</td>
     <td>
     <select name="wpm" id="wpm">
-      {% for wpm in ["12","15","18","20","25","30","40"] %}
+      {% for wpm in ["12","15","18","20","22","25","28","30","35","40"] %}
         <option value="{{wpm}}" {%if wpm in selectedWPM %}selected{% endif %}>{{wpm}}</option>
       {% endfor %}
     </select>
@@ -22,13 +22,13 @@
       <td>Verse</td>
       <td>
       <select name="verseSelect" id="verseSelect" >
-        <option value="">Select a verse</option>
+        <option value="">Select a {{verse_term}}</option>
         {%for verse in verses %}
         {% set selected="" %}
-        {% if selectedVerse == verse[0] %}
+        {% if selectedVerse == verse.file_name %}
           {% set selected = "selected" %}  
         {% endif %}  
-        <option value="{{verse[0]}}" {{selected}}>{{verse[1]}}</option>
+        <option value="{{verse.file_name}}" {{selected}}>{{verse.display_name}}</option>
         {% endfor %}
       </select>
       </td>

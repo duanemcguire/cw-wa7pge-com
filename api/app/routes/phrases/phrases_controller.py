@@ -6,24 +6,28 @@ import unicodedata
 import logging
 log =  logging.getLogger(__name__)
 phrases = Blueprint('phrases', __name__)
-
+remove_yuk_chars = True
 
 def simplify_accents(text):
     nfkd_form = unicodedata.normalize('NFKD', text)
     return "".join([c for c in nfkd_form if not unicodedata.combining(c)])
 
+def remove_yucky(line):
+    yuk = "{}[];:\\|-_+*&^%$#@!<>"
+    for ltr in yuk:
+        line = line.replace(ltr," ")
+    return line
+
+
 def simplify_cw_line(line):
     line = line.replace("’","'")
     line = line.replace("&"," and ")
     line = simplify_accents(line)
+    if remove_yuk_chars == True:
+        line = remove_yucky(line)
     return line
 
 
-def simplify_display_line(line):
-    line = line.replace("’","'")
-    line = line.replace("~","<BR/>")
-    line = simplify_accents(line)
-    return line
 
 def getPhraseAttr():
     attr = {}

@@ -1,6 +1,44 @@
 {% extends 'base.html' %}
 
 {% block content %}
+
+
+
+
+<style>
+    .tooltip {
+      position: absolute;
+      background-color: #333;
+      color: #fff;
+      padding: 10px;
+      border-radius: 5px;
+      font-size: 14px;
+      visibility: hidden;
+      opacity: 0;
+      transition: opacity 0.2s;
+      z-index: 1000;
+    }
+
+    .tooltip.visible {
+      visibility: visible;
+      opacity: 1;
+    }
+
+    .tooltip-trigger {
+      cursor: pointer;
+      display: inline-block;
+      color:crimson;
+    }
+
+    .tooltip a {
+      color: #66ccff;
+      text-decoration: underline;
+    }
+  </style>
+
+
+
+
 <h1>7 days of LICW classes</h1>
     <form method="POST">
         <div style="width: 200px">
@@ -26,11 +64,69 @@
         </div>
     </form>
     <div class="content">
+    {% set ns = namespace(cnt=0) %}    
     {%for key in calEvents %}
         <h4 style="margin-bottom: 0px; margin-top: 10px;">{{key}}</h4>
         {%for classtime in calEvents[key] %}
-            <div style="margin-left: 10px">{{classtime}}</div>       
+            {% set ns.cnt = ns.cnt + 1 %}
+            
+            <div style="margin-left: 10px">{{classtime[0] | safe}}{% include 'utility/tool_tip.html' %}</div>       
         {% endfor %}
     {% endfor %}    
     </div>
+  <script>
+    const triggers = document.querySelectorAll('.tooltip-trigger');
+    const tooltips = document.querySelectorAll('.tooltip');
+    let hideTimeouts = new Map();
+
+    function showTooltip(trigger, tooltip) {
+      const rect = trigger.getBoundingClientRect();
+      tooltip.style.top = `${rect.bottom + window.scrollY + 5}px`;
+      tooltip.style.left = `${rect.left + window.scrollX}px`;
+      tooltip.classList.add('visible');
+    }
+
+    function hideTooltip(tooltip) {
+      tooltip.classList.remove('visible');
+    }
+
+    function delayedHide(tooltip) {
+      hideTimeouts.set(tooltip.id, setTimeout(() => hideTooltip(tooltip), 150));
+    }
+
+    function cancelHide(tooltip) {
+      const timeoutId = hideTimeouts.get(tooltip.id);
+      if (timeoutId) {
+        clearTimeout(timeoutId);
+        hideTimeouts.delete(tooltip.id);
+      }
+    }
+
+    triggers.forEach(trigger => {
+      const tooltipId = trigger.dataset.tooltipId;
+      const tooltip = document.getElementById(tooltipId);
+
+      // Show tooltip on click/tap
+      trigger.addEventListener('click', (e) => {
+        e.stopPropagation();
+        showTooltip(trigger, tooltip);
+      });
+
+      // Hover behavior (desktop)
+      trigger.addEventListener('mouseenter', () => cancelHide(tooltip));
+      trigger.addEventListener('mouseleave', () => delayedHide(tooltip));
+      tooltip.addEventListener('mouseenter', () => cancelHide(tooltip));
+      tooltip.addEventListener('mouseleave', () => delayedHide(tooltip));
+    });
+
+    // Hide all tooltips when clicking outside
+    document.addEventListener('click', (e) => {
+      tooltips.forEach(tooltip => {
+        const trigger = document.querySelector(`[data-tooltip-id="${tooltip.id}"]`);
+        if (!tooltip.contains(e.target) && !trigger.contains(e.target)) {
+          hideTooltip(tooltip);
+        }
+      });
+    });
+  </script>    
 {% endblock %}

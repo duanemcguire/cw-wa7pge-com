@@ -1,0 +1,7 @@
+  {% block content %}
+  <div class="tooltip-trigger" data-tooltip-id="tooltip{{ ns.cnt }}">[More]</div>
+  <div class="tooltip" id="tooltip{{ ns.cnt }}">
+    <strong>Class Info:</strong><br>
+    {{classtime[1] | safe}}
+  </div>
+  {% endblock %}

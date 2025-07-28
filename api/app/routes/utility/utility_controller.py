@@ -45,25 +45,23 @@ def licw_classes():
             start_utc = event.begin.astimezone(pytz.utc)
             start_local = start_utc.astimezone()
             days_diff = (now_utc - event.begin).days
-
             if days_diff < 0 and days_diff > -8:
                 # getting next 7 days
-
-                if event.name[:1] != "[":  
+                if event.name[:1] != "[": 
+                    log.debug(event.name) 
+                    log.debug(" ")
                     # not cancelled or summer break
                     room = ""
-                    className = event.name
+                    className = event.name.strip()
+                    classDescription = event.description.strip()
                     if 'Zoom' in event.name: 
                         room = event.name[-6:]
-                        className = event.name[:-8]
-
-                    #results.append([className,f"{event.begin.datetime.astimezone(pytz.timezone(user_tz)).strftime('%A, %B %d %I:%M %p %Z')} - {room}"])
-                    results.append([className, event.begin.datetime.astimezone(pytz.timezone(user_tz)), room])
+                        className = event.name.strip()[:-8]
+                    results.append([className, event.begin.datetime.astimezone(pytz.timezone(user_tz)), room, event.description.replace("\\","")])
         results.sort()
         results2 = []
         for row in results:
-
-            row2 = [row[0], f"{row[1].strftime('%A, %B %d %I:%M %p %Z')} - {row[2]}"]           
+            row2 = [row[0], [f"{row[1].strftime('%A, %B %d %I:%M %p %Z')} - {row[2]} ", row[3]]]           
             results2.append(row2)
         calEvents = defaultdict(list)
         for key, value in results2:

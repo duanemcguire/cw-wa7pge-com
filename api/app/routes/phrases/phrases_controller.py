@@ -38,10 +38,10 @@ def getPhraseAttr():
 
     categories = sorted([f for f in os.listdir(TEXT_FOLDER)])
     
-    if len(request.form) > 0:
-        newCategory = request.form.get('newCategory')
-        selected_category = request.form.get('category')
-        selected_file = request.form.get('filename')
+    if len(request.values) > 0:
+        newCategory = request.values.get('newCategory')
+        selected_category = request.values.get('category')
+        selected_file = request.values.get('filename')
         collections_path = os.path.join(TEXT_FOLDER, selected_category)
         collections = sorted([f for f in os.listdir(collections_path)])
         if newCategory == "1":
@@ -90,7 +90,7 @@ def deprecated1():
 @phrases.route('/', methods=['GET', 'POST'])
 def songtitles():
 
-    wpm = request.form.get('wpm')
+    wpm = request.values.get('wpm')
     wpm_options = [12,14,16,18,20,25,27,30,31,40]
 
     attr = getPhraseAttr()

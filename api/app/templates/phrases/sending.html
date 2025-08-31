@@ -4,7 +4,7 @@
 
 <h2>Phrase Sending Practice</h2>
 
-<form method="POST" id='theForm'>
+<form method="GET" id='theForm'>
     Category: <select name="category" id='category' style="max-width: 200px;">
         {% for category in categories %}
         <option value="{{ category }}" {% if category==selected_category %}selected{% endif %}>{{ category }}</option>
@@ -66,7 +66,22 @@
             //Submit the form to collect the lines
             theForm.submit();
         }
-    });    
+    });  
+
+    // Hot Keys
+
+    window.addEventListener("keydown", function(e) {
+        if(["Space","ArrowUp","ArrowDown","ArrowLeft","ArrowRight"].indexOf(e.code) > -1) {
+            e.preventDefault();
+        }
+    }, false);
+    document.addEventListener('keydown', function(event) {
+        // Check for specific key
+        if (event.key === "ArrowRight" ) {
+            // Get Next Phrase
+            document.getElementById("buttonGetPhrase").click()
+        } 
+    })     
 
 
 

@@ -91,7 +91,7 @@ def deprecated1():
 def songtitles():
 
     wpm = request.form.get('wpm')
-    wpm_options = [12,14,16,18,20,25,30,40]
+    wpm_options = [12,14,16,18,20,25,27,30,31,40]
 
     attr = getPhraseAttr()
 

@@ -2,6 +2,14 @@
     
 {% block content %}
     
+<style>
+    button {margin-bottom: 4px;}
+    @media (max-width: 768px) {
+        #hotkeys {
+            display: none;
+        }
+    }
+</style>
 <body>
     <h2>Phrase Copy Practice</h2>
     
@@ -12,7 +20,7 @@
             {% for wpmo in wpm_options %}
                 <option value="{{ wpmo }}" {% if wpmo|int  == wpm|int  %}selected{% endif %}>{{ wpmo }}</option>
             {% endfor %}
-        </select><BR>
+        </select>
 
         Category: <select name="category" id='category' style="max-width: 200px;">
             {% for category in categories %}
@@ -25,18 +33,30 @@
                 <option value="{{ file }}" {% if file == selected_file %}selected{% endif %}>{{ file }}</option>
             {% endfor %}
         </select>
-	<br>
+	
         
         <input type="hidden" name="newCategory" id="newCategory" value = "0">
 
     </form>
 
     
-    <button id="buttonGetPhrase">Get a {{selected_category}}</button><BR><BR>    
-    <button id="buttonPlayCW"  style="visibility: hidden;">Play the CW</button>
-    <button id="buttonDisplayTitle" style="visibility: hidden;">Reveal the {{selected_category}}</button>
-    <button id="buttonHideTitle" style="visibility: hidden;">Hide the {{selected_category}}</button>
+    <button id="buttonGetPhrase"><span style="text-decoration:underline">G</span>et a {{selected_category}}</button><BR>    
+    <button id="buttonPlayCW"  style="visibility: hidden;"><span style="text-decoration:underline">P</span>lay the CW</button>
+    <button id="buttonDisplayTitle" style="visibility: hidden;"><span style="text-decoration:underline">R</span>eveal the {{selected_category}}</button>
+    <button id="buttonHideTitle" style="visibility: hidden;"><span style="text-decoration:underline">H</span>ide the {{selected_category}}</button>
     <div class="line-display" id="reveal_title" style="display:none;"></div>    
+
+    <div id="hotkeys">
+        <BR>
+        Hot Keys:
+        <ul>
+            <li>Right Arrow: Get the next phrase</li>
+            <li>Left Arrow: Play the CW again</li>
+            <li>Up Arrow: Reveal the phrase</li>
+            <li>Down Arrow: Hide the phrase</li>
+            <li>Space: Pause</li>
+        </ul>
+    </div>
     
 
  <script>
@@ -45,6 +65,9 @@
     let line = ''
     const player = new jscw();
     player.init()
+
+
+
     function play_cw(text){
         player.stop()
         player.init()
@@ -67,6 +90,23 @@
         line = line.replace(")"," = ") 
         return line;
     }
+    function getNext(){
+        if (lines.length > 0){
+            line = getLine()
+            play_cw(line);
+            document.getElementById('reveal_title').innerText = line;
+            buttonPlayCW.style.visibility = 'visible';
+            buttonDisplayTitle.style.visibility = 'visible';
+            buttonHideTitle.style.visibility = 'hidden';
+            document.getElementById('reveal_title').style.display = 'none';
+        }else{
+            //Submit the form to collect the lines
+            theForm.submit();
+        }
+
+
+    }
+
     category = document.getElementById('category');
     category.addEventListener('change', () => {
         newCategory = document.getElementById('newCategory');
@@ -80,6 +120,7 @@
         play_cw(line)
 
     });
+
     buttonDisplayTitle.addEventListener('click', () => {
         document.getElementById('reveal_title').style.display = 'block';
         buttonHideTitle.style.visibility = 'visible';
@@ -92,20 +133,43 @@
     });
 
     buttonGetPhrase.addEventListener('click', () => {
-        if (lines.length > 0){
-            line = getLine()
-            play_cw(line);
-            document.getElementById('reveal_title').innerText = line;
-            buttonPlayCW.style.visibility = 'visible';
-            buttonDisplayTitle.style.visibility = 'visible';
-            buttonHideTitle.style.visibility = 'hidden';
-            document.getElementById('reveal_title').style.display = 'none';
-
-
-        }else{
-            //Submit the form to collect the lines
-            theForm.submit();
-        }
+        getNext()
     });
+// Hot Keys
+
+    window.addEventListener("keydown", function(e) {
+        if(["Space","ArrowUp","ArrowDown","ArrowLeft","ArrowRight"].indexOf(e.code) > -1) {
+            e.preventDefault();
+        }
+    }, false);
+    document.addEventListener('keydown', function(event) {
+        // Check for specific key
+        if (event.key === 'g' || event.key === "ArrowRight" ) {
+            // Get Next Phrase
+            getNext();
+        }
+        if (event.key === 'p'  || event.key === "ArrowLeft") {
+            // Play the CW
+            play_cw(line);
+        }
+        if (event.key === 'r' || event.key === "ArrowUp") {
+            // Reveal Phrase
+            document.getElementById('reveal_title').style.display = 'block';
+            buttonHideTitle.style.visibility = 'visible';
+        }
+        if (event.key === 'h' || event.key === "ArrowDown") {
+            // Hide Phrase
+            document.getElementById('reveal_title').style.display = 'none';
+            buttonHideTitle.style.visibility = 'hidden';
+        }
+        if (event.key === ' ' ) {
+            // pause
+            player.pause()
+        }
+
+
+    });
+
+
 </SCRIPT>    
 {% endblock %}    

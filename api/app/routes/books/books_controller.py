@@ -107,3 +107,6 @@ def garden():
 @books.route('/princess_of_mars', methods=['GET', 'POST'])
 def princess():
     return verses('princess_of_mars_text','Chapter/Part',"The Princess of Mars")
+@books.route('/wisteria', methods=['GET','POST'])
+def wisteria():
+    return verses('ACD-Wisteria-Lodge','Part',"Wisteria Lodge - Arthur Conan Doyle")

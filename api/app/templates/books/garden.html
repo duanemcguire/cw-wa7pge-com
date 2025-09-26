@@ -19,7 +19,7 @@
     </td>
     </tr>
     <tr>
-      <td>Verse</td>
+      <td>{{verse_term}}</td>
       <td>
       <select name="verseSelect" id="verseSelect" >
         <option value="">Select a {{verse_term}}</option>
@@ -79,7 +79,7 @@
       buttonHideText.style.visibility = 'visible';
     })
     buttonPlayCW.addEventListener('click', function(){
-      playCW("{{verseCW}}");
+      playCW("{{verseCW | safe}}");
       document.getElementById('buttonPauseCW').style.visibility = 'visible';
     })
     buttonPauseCW.addEventListener('click', function(){
@@ -101,7 +101,7 @@
       }
     })
     document.getElementById('wpm').addEventListener('change', () => {
-      playCW("{{verseCW}}");
+      playCW("{{verseCW | safe}}");
       document.getElementById('buttonPauseCW').style.visibility = 'visible';
 
     })    

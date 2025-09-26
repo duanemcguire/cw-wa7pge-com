@@ -61,6 +61,20 @@ def get_verse_files(text_dir):
                 verses.append(verse)
                 log.debug(verse.__str__)
             verses.sort(key=lambda v: v.key) 
+        case "ACD-Wisteria-Lodge":
+            versedir = os.listdir(TEXT_FOLDER)
+            for f in versedir:
+                if f.endswith(".txt"):
+                    verse = Verse()
+                    verse.key = f
+                    verse.file_name = f
+                    versename = f.split(".")[0]
+                    versename = versename.replace("_"," ").title()
+                    verse.display_name = versename
+                    verses.append(verse)
+            verses.sort(key=lambda verse: verse.key)            
+
+
         case _:
             verses.append(Verse())    
         
@@ -85,7 +99,7 @@ def verses(text_dir,verse_term,book_title):
         except Exception as e:
             verseText = f"Error: selected verse not found."
             verseCW = "Error"
-        verseCW = verseText.replace("\n","   ")        
+        verseCW = verseText.replace("\n","   ").replace('"','')
     return render_template('books/garden.html', 
         verses=verses, 
         verseText=verseText,

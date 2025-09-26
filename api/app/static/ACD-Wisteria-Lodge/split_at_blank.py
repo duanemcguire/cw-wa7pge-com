@@ -2,8 +2,8 @@
 import os
 import sys
 
-max_chars = 6000
-out_prefix = "chunk_"
+max_chars = 3000
+out_prefix = "part_"
 
 with open(sys.argv[1], "r", encoding="utf-8") as f:
     text = f.read()

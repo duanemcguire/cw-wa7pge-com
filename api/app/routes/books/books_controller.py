@@ -24,7 +24,7 @@ def get_verse_files(text_dir):
     versedir = os.listdir(TEXT_FOLDER)
     verses = []
     match text_dir:
-        case "garden_text":
+        case "garden_text" | "aesops_fables":
             versedir = os.listdir(TEXT_FOLDER)
             for f in versedir:
                 verse = Verse()
@@ -61,7 +61,7 @@ def get_verse_files(text_dir):
                 verses.append(verse)
                 log.debug(verse.__str__)
             verses.sort(key=lambda v: v.key) 
-        case "ACD-Wisteria-Lodge":
+        case "ACD-Wisteria-Lodge" | "peter_pan_text":
             versedir = os.listdir(TEXT_FOLDER)
             for f in versedir:
                 if f.endswith(".txt"):
@@ -121,6 +121,17 @@ def garden():
 @books.route('/princess_of_mars', methods=['GET', 'POST'])
 def princess():
     return verses('princess_of_mars_text','Chapter/Part',"The Princess of Mars")
+
 @books.route('/wisteria', methods=['GET','POST'])
 def wisteria():
     return verses('ACD-Wisteria-Lodge','Part',"Wisteria Lodge - Arthur Conan Doyle")
+
+@books.route('/peter_pan', methods=['GET','POST'])
+def peterpan():
+    return verses('peter_pan_text','Part',"Peter Pan -- J.M. Barrie")
+
+@books.route('/aesops_fables', methods=['GET', 'POST'])
+def aesop():
+    return verses('aesops_fables','Fable',"Aesop's Fables")
+
+

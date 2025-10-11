@@ -7,10 +7,17 @@ from datetime import datetime
 from pytz import timezone
 from collections import defaultdict
 import requests
+import re
 
 log =  logging.getLogger(__name__)
 utility = Blueprint('utility', __name__)
 
+def remove_html(text):
+    """
+    Removes HTML tags from a string using regular expressions.
+    """
+    clean = re.compile('<.*?>')
+    return re.sub(clean, '', text)
 
 
 @utility.route('/licw-classes', methods=['GET','POST'])
@@ -25,7 +32,7 @@ def licw_classes():
     calEvents = {}
     caltype = ""
     user_tz = "America/New_York"
-    tz_choices = ["UTC","America/New_York","America/Chicago","America/Denver","America/Seattle","America/Phoenix"]
+    tz_choices = ["UTC","America/New_York","America/Chicago","America/Denver","America/Los_Angeles","America/Phoenix"]
     if len(request.form) > 0:
         caltype = request.form.get('caltype')
         user_tz = request.form.get('user_tz')
@@ -53,11 +60,11 @@ def licw_classes():
                     # not cancelled or summer break
                     room = ""
                     className = event.name.strip()
-                    classDescription = event.description.strip()
+#                    classDescription = remove_html(event.description.strip())
                     if 'Zoom' in event.name: 
                         room = event.name[-6:]
                         className = event.name.strip()[:-8]
-                    results.append([className, event.begin.datetime.astimezone(pytz.timezone(user_tz)), room, event.description.replace("\\","")])
+                    results.append([className, event.begin.datetime.astimezone(pytz.timezone(user_tz)), room, remove_html(event.description.replace("\\",""))])
         results.sort()
         results2 = []
         for row in results:

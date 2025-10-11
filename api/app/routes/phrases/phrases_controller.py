@@ -39,11 +39,15 @@ def getPhraseAttr():
     categories = sorted([f for f in os.listdir(TEXT_FOLDER)])
     
     if len(request.values) > 0:
-        newCategory = request.values.get('newCategory')
+        newCategory = 0
         selected_category = request.values.get('category')
-        selected_file = request.values.get('filename')
         collections_path = os.path.join(TEXT_FOLDER, selected_category)
         collections = sorted([f for f in os.listdir(collections_path)])
+        selected_file = collections[0]
+        if 'newCategory' in request.values:
+            newCategory = request.values.get('newCategory')
+        if 'filename' in request.values:
+            selected_file = request.values.get('filename')
         if newCategory == "1":
             selected_file = collections[0]
         category_dir = os.path.join(TEXT_FOLDER, selected_category)
@@ -91,9 +95,13 @@ def deprecated1():
 def songtitles():
 
     wpm = request.values.get('wpm')
-    wpm_options = [12,14,16,18,20,25,27,30,31,40]
+    wpm_options = [12,14,16,18,20,22,25,27,30,31,40]
 
     attr = getPhraseAttr()
+    try:
+        attr['categories'].remove('Pangram') # not really appropriate for copying
+    except ValueError:
+        pass
 
     return render_template('phrases/copying.html',
                            wpm_options=wpm_options, 

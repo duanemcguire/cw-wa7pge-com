@@ -60,7 +60,6 @@ def licw_classes():
                     # not cancelled or summer break
                     room = ""
                     className = event.name.strip()
-#                    classDescription = remove_html(event.description.strip())
                     if 'Zoom' in event.name: 
                         room = event.name[-6:]
                         className = event.name.strip()[:-8]

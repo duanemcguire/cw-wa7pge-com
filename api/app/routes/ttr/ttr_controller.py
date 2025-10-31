@@ -5,7 +5,7 @@ from flask import Blueprint
 import unicodedata
 import logging
 log =  logging.getLogger(__name__)
-phrases = Blueprint('phrases', __name__)
+ttr = Blueprint('ttr', __name__)
 remove_yuk_chars = True
 
 def simplify_accents(text):

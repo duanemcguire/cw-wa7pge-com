@@ -1,0 +1,144 @@
+<html>
+<head>
+    
+<style>
+    button {margin-bottom: 4px;}
+    @media (max-width: 768px) {
+        #hotkeys {
+            display: none;
+        }
+    }
+</style>
+<script src="api/app/static/js/jscwlib.js"></script>
+
+</head>
+<body>
+    <h2>Word flow/TTR</h2>
+        WPM: 
+        <select name="wpm" id="wpm" style="width: 95px;" >
+            <option value="12" >12</option>
+            <option value="14" >14</option>
+            <option value="16" >16</option>
+            <option value="18" >18</option>
+            <option value="20" selected >20</option>
+            <option value="22" >22</option>
+            <option value="25" >25</option>
+            <option value="27" >27</option>
+            <option value="30" >30</option>
+            <option value="32" >32</option>
+            <option value="35" >35</option>
+            <option value="37" >37</option>
+            <option value="40">40</option>
+        </select>
+        <BR>
+        Word Spacing: 
+        <select name="ws" id="ws"  >
+            <option value="1.0" >1 (Standard)</option>
+            <option value="1.2" >1.2</option>
+            <option value="1.4" >1.4</option>
+            <option value="1.6" >1.6</option>
+            <option value="1.8" >1.8</option>
+            <option value="2.0" >2.0</option>
+            <option value="2.2" >2.2</option>
+            <option value="2.4" >2.4</option>
+            <option value="2.6" >2.6</option>
+            <option value="2.8" >2.8</option>
+            <option value="3.0" >3.0</option>
+        </select>    
+        <span><span id="wordSpace">420</span> ms</span>
+    <BR>   
+    <button id="buttonPlayCW"  ">Play</button>
+    <button id="buttonStopCW"  ">Stop</button>
+    <BR>
+    <div class="line-display" id="reveal_title" style="display:block; font-size: 3em; padding: 20px;" ></div>    
+
+
+    
+
+ <script>
+    const lines = ['able', 'acid', 'aged', 'also', 'area', 'army', 'away', 'baby', 'back', 'ball', 'band', 'bank', 'base', 'bath', 'bear', 'beat', 'been', 'bell', 'best', 'bird', 'blow', 'blue', 'boat', 'body', 'book', 'born', 'both', 'boys', 'burn', 'bush', 'busy', 'call', 'came', 'camp', 'card', 'care', 'case', 'cash', 'cast', 'cell', 'chat', 'chip', 'city', 'clay', 'club', 'coal', 'coat', 'code', 'cold', 'come', 'cook', 'cool', 'copy', 'corn', 'cost', 'crew', 'crop', 'cure', 'cute', 'dark', 'data', 'date', 'dawn', 'days', 'dead', 'deal', 'dear', 'deep', 'desk', 'diet', 'disk', 'dogs', 'done', 'door', 'dose', 'down', 'draw', 'drew', 'drop', 'drug', 'dump', 'dust', 'each', 'earn', 'east', 'easy', 'edge', 'else', 'even', 'ever', 'evil', 'exam', 'exit', 'face', 'fact', 'fail', 'fair', 'fall', 'farm', 'fast', 'fear', 'feel', 'feet', 'fell', 'felt', 'file', 'fill', 'film', 'find', 'fine', 'fire', 'firm', 'fish', 'five', 'flat', 'fled', 'flew', 'flow', 'fold', 'food', 'foot', 'form', 'fort', 'four', 'free', 'from', 'fuel', 'full', 'fund', 'gain', 'game', 'gate', 'gave', 'girl', 'give', 'glad', 'goal', 'goes', 'gold', 'golf', 'gone', 'good', 'grab', 'grew', 'grip', 'grow', 'gulf', 'hair', 'half', 'hall', 'hand', 'hard', 'harm', 'hate', 'have', 'head', 'hear', 'heat', 'held', 'help', 'here', 'hide', 'high', 'hill', 'hint', 'hire', 'hold', 'hole', 'home', 'hope', 'host', 'hour', 'huge', 'hung', 'hunt', 'hurt', 'idea', 'inch', 'iron', 'item', 'jail', 'jane', 'july', 'jump', 'june', 'just', 'keep', 'kept', 'keys', 'kick', 'kids', 'kill', 'kind', 'king', 'knew', 'know', 'lack', 'laid', 'lake', 'land', 'last', 'late', 'lead', 'left', 'legs', 'less', 'lies', 'life', 'lift', 'like', 'line', 'link', 'list', 'live', 'loan', 'lock', 'long', 'look', 'loop', 'lose', 'loss', 'lost', 'lots', 'loud', 'love', 'luck', 'made', 'mail', 'main', 'make', 'male', 'mall', 'many', 'mark', 'mass', 'mate', 'math', 'meal', 'mean', 'meat', 'meet', 'memo', 'menu', 'mile', 'milk', 'mind', 'mine', 'miss', 'mode', 'moon', 'more', 'most', 'move', 'much', 'must', 'name', 'navy', 'near', 'neck', 'need', 'news', 'next', 'nice', 'nine', 'none', 'noon', 'nose', 'note', 'oath', 'once', 'only', 'open', 'over', 'owns', 'pace', 'pack', 'page', 'paid', 'pain', 'pair', 'park', 'part', 'pass', 'past', 'path', 'peak', 'pick', 'pile', 'pink', 'plan', 'play', 'plot', 'plus', 'poem', 'pool', 'poor', 'port', 'post', 'pour', 'pull'];
+    const player = new jscw();
+    const wpmEl = document.getElementById('wpm')
+    const wsEl = document.getElementById('ws')
+
+    let prefix = 'VVV  '
+    let line = '';
+    let displayTime = 1000;
+    let wordSpace = 420;
+    let stop = false;
+
+    function play_cw(){
+        if (! stop) {
+            player.init();
+            wordSpace = getWordSpace();
+            player.setWpm(speed);
+            line = getLine();
+            player.onFinished = display_line;
+            player.play(prefix + " " + line);
+            prefix = "";
+        }    
+    }
+
+    function stop_cw(){
+        stop = true;
+        player.stop();
+    }
+
+    function display_line(){
+        setTimeout(() => {
+            document.getElementById("reveal_title").style.display = "block";
+            document.getElementById("reveal_title").innerText =  line;
+            setTimeout(() => {
+                document.getElementById("reveal_title").style.display = "none";
+                play_cw();
+                }, displayTime);
+                         
+        },wordSpace);    
+
+            
+   
+    }
+
+    function getWordSpace(){
+        speed = wpmEl.options[wpmEl.selectedIndex].value
+        ws = wsEl.options[wsEl.selectedIndex].value
+        w = Math.floor(8400*ws/speed) 
+        return w
+    }
+
+    function getLine(){
+        randomIndex = Math.floor(Math.random() * lines.length);
+        line = lines[randomIndex].trim().replace("~"," ")
+        line = line.replace("("," = ")
+        line = line.replace(")"," = ")
+        line = line.replace("/n","") 
+        
+        return line;
+    }
+
+
+    buttonPlayCW.addEventListener('click', () =>{
+        stop = false;
+        play_cw(line)
+
+    });
+
+    buttonStopCW.addEventListener('click', () =>{
+        stop_cw()
+
+    });
+
+    wpmEl.addEventListener('change', function(event) {
+        document.getElementById('wordSpace').innerText = getWordSpace();
+        
+    });
+
+    wsEl.addEventListener('change', function(event) {
+        document.getElementById('wordSpace').innerText = getWordSpace();
+        
+    });
+
+
+</SCRIPT>    
+</body>
+</html>

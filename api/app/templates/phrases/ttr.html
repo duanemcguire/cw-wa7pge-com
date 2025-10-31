@@ -1,0 +1,173 @@
+{% extends 'base.html' %}
+    
+{% block content %}
+    
+<style>
+    button {margin-bottom: 4px;}
+    @media (max-width: 768px) {
+        #hotkeys {
+            display: none;
+        }
+    }
+</style>
+<script src="api/app/static/js/jscwlib.js"></script>
+
+<div class="content" >
+    <h2>Word flow/TTR</h2>
+    <div style="float: left">
+        <form method="GET" id='theForm' >
+            Word Collection: <select id="selectCollection" name="filename" style="width: 200px;">
+                {% for file in files %}
+                    <option value="{{ file }}" {% if file == selected_file %}selected{% endif %}>{{ file }}</option>
+                {% endfor %}
+            </select>
+
+            WPM: 
+        <select name="wpm" id="wpm" style="width: 150px;" >
+            <option value="12" >12</option>
+            <option value="14" >14</option>
+            <option value="16" >16</option>
+            <option value="18" >18</option>
+            <option value="20" selected >20</option>
+            <option value="22" >22</option>
+            <option value="25" >25</option>
+            <option value="27" >27</option>
+            <option value="30" >30</option>
+            <option value="32" >32</option>
+            <option value="35" >35</option>
+            <option value="37" >37</option>
+            <option value="40">40</option>
+        </select> Word Spacing: <select name="ws" id="ws" style="width: 150px;" >
+            <option value="1.0" >1 (Standard)</option>
+            <option value="1.2" >1.2</option>
+            <option value="1.4" >1.4</option>
+            <option value="1.6" >1.6</option>
+            <option value="1.8" >1.8</option>
+            <option value="2.0" >2.0</option>
+            <option value="2.2" >2.2</option>
+            <option value="2.4" >2.4</option>
+            <option value="2.6" >2.6</option>
+            <option value="2.8" >2.8</option>
+            <option value="3.0" >3.0</option>
+        </select><span><span id="wordSpace">420</span> ms</span>
+    <BR>
+    <input type="checkbox" checked name="reveal" id="reveal"><label for="reveal">Reveal word after word space</label>    
+    <input type="hidden" name="newCategory" id="newCategory" value = "0">
+
+    </form>
+    
+    <button id="buttonPlayCW"  ">Play</button>
+    <button id="buttonStopCW"  ">Stop</button>
+    <BR>
+    <div class="line-display" id="reveal_title" style="display:block; font-size: 3em; padding: 5px; float: left;" ></div>    
+    <div class="line-display" id="reveal_title" style="display:block; font-size: 3em; padding: 5px; float: left; color: white" >|</div>    
+    </div>
+    <div style="margin: 5px; float: left; border: 1px solid black; padding: 3px; background-color: #eeeeee; max-width: 600px;" >
+        <H2>Time To Recognize / TTR</H2>
+        To acheive CW fluency, after we are familiar with all the characters, we work to reduce our "time to recognize" (TTR).   This exercise will expose your ability to recognize words in the space between words.   The exercise is under the most extreme conditions: the words are random, so there is no context allowing for prediction.  <BR><BR>
+        The initial setting for this exercise is for 20 wpm with standard word spacing.  At 20 wpm, the standard space between words is 420 milliseconds.  After the word is sent, the word is flashed on the 
+        screen after a 420 millisecond delay.  As an example, you may double the space between words by changing the word spacing to 2.    Similarly, at 12 wpm, the standard word spacing provides 700 milliseconds for recognition. <BR>
+            <BR> As you progress with this exercise, you may also wish to run it without revealing the word sent by unchecking that option.    
+    </div>
+    </div>
+
+</div>
+    
+
+ <script>
+    const player = new jscw();
+    const wpmEl = document.getElementById('wpm')
+    const wsEl = document.getElementById('ws')
+    const revealEl = document.getElementById('reveal')
+
+    let lines = {{lines | safe}};
+    let prefix = 'VVV  '
+    let line = '';
+    let displayTime = 1000;
+    let wordSpace = 420;
+    let stop = false;
+
+    function play_cw(){
+        if (! stop) {
+            player.init();
+            wordSpace = getWordSpace();
+            player.setWpm(speed);
+            line = getLine();
+            player.onFinished = display_line;
+            player.play(prefix + " " + line);
+            prefix = "";
+        }    
+    }
+
+    function stop_cw(){
+        stop = true;
+        player.stop();
+    }
+
+    function display_line(){
+        if (revealEl.checked){
+            setTimeout(() => {
+                document.getElementById("reveal_title").style.display = "block";
+                document.getElementById("reveal_title").innerText =  line;
+                setTimeout(() => {
+                    document.getElementById("reveal_title").style.display = "none";
+                    play_cw();
+                    }, displayTime);
+                            
+            },wordSpace);    
+        }else{
+            setTimeout(() => {
+                   play_cw();
+            },wordSpace);    
+
+
+        }    
+            
+   
+    }
+
+    function getWordSpace(){
+        speed = wpmEl.options[wpmEl.selectedIndex].value
+        ws = wsEl.options[wsEl.selectedIndex].value
+        w = Math.floor(8400*ws/speed) 
+        return w
+    }
+
+    function getLine(){
+        randomIndex = Math.floor(Math.random() * lines.length);
+        line = lines[randomIndex].trim().replace("~"," ")
+        line = line.replace("("," = ")
+        line = line.replace(")"," = ")
+        line = line.replace("/n","") 
+        
+        return line;
+    }
+
+
+    buttonPlayCW.addEventListener('click', () =>{
+        stop = false;
+        play_cw(line)
+
+    });
+
+    buttonStopCW.addEventListener('click', () =>{
+        stop_cw()
+
+    });
+
+    wpmEl.addEventListener('change', function(event) {
+        document.getElementById('wordSpace').innerText = getWordSpace();
+        
+    });
+
+    wsEl.addEventListener('change', function(event) {
+        document.getElementById('wordSpace').innerText = getWordSpace();
+        
+    });
+    selectCollection.addEventListener('change', () => {
+        theForm.submit();
+    });
+
+
+</SCRIPT>    
+{% endblock %}

@@ -33,6 +33,7 @@ def getPhraseAttr():
     attr = {}
     current_file = os.path.abspath(__file__)
     current_dir = os.path.dirname(current_file)
+    print(f"request.path: {request.path}")
     os.chdir(current_dir)
     TEXT_FOLDER = "text_files"
 
@@ -40,7 +41,10 @@ def getPhraseAttr():
     
     if len(request.values) > 0:
         newCategory = 0
-        selected_category = request.values.get('category')
+        if request.path == '/phrases/ttr':
+            selected_category = 'Word'
+        else:
+            selected_category = request.values.get('category')
         collections_path = os.path.join(TEXT_FOLDER, selected_category)
         collections = sorted([f for f in os.listdir(collections_path)])
         selected_file = collections[0]
@@ -65,6 +69,10 @@ def getPhraseAttr():
         # get the first category and collection  and go with that. 
         categories = sorted([f for f in os.listdir(TEXT_FOLDER)])
         selected_category = categories[0]
+        if request.path == '/phrases/ttr':
+            selected_category = 'Word'
+            newCategory = 1 
+
         collections_path = os.path.join(TEXT_FOLDER, selected_category)
         collections = sorted([f for f in os.listdir(collections_path)])
         selected_file = collections[0]

@@ -23,6 +23,7 @@
             </select>
 
             WPM: 
+
         <select name="wpm" id="wpm" style="width: 150px;" >
             {% for wpm_option in attr.wpm_options %} 
                 <option value="{{wpm_option}}" {% if wpm_option == attr['wpm'] %}selected{% endif %}>{{wpm_option}} </option>
@@ -36,7 +37,6 @@
         
         </select><span><span id="wordSpace">420</span> ms</span>
         <BR>
-        <input type="checkbox" checked name="reveal" id="reveal"><label for="reveal">Reveal word after word space</label>    
         <input type="hidden" name="newCategory" id="newCategory" value = "0">
 
         </form>
@@ -48,12 +48,14 @@
         <div class="line-display" id="reveal_title" style="display:block; font-size: 3em; padding: 5px; float: left; color: white" >|</div>    
     </div>
     <div style="margin: 5px; float: left; border: 1px solid black; padding: 3px; background-color: #eeeeee; max-width: 600px;" >
-        <H2>Time To Recognize / TTR Version 1</H2>
-        To acheive CW fluency, after we are familiar with all the characters, we work to reduce our "time to recognize" (TTR).   This utility will help you to measure your time to recognize words.    <BR><BR>
-        The initial setting is 20 wpm with standard word spacing.  At 20 wpm, the standard space between words is 420 milliseconds.  After the word is sent, the word is flashed on the screen after a 420 millisecond delay.  As an example, you may double the space between words by changing the word spacing to 2.    Similarly, at 12 wpm, the standard word spacing provides 700 milliseconds for recognition. <BR>
-            <BR> 
-        <a href="/phrases/ttr2">Version 2</a> is also available.   
-            
+        <H2>Time To Recognize / TTR Version 2</H2>
+        This version of the TTR exercise eliminates the option of flashing the word after it is sounded. Go with the flow. Focus on forward motion.   
+        If a word is missed, ignore it. Focus on catching the next word. 
+        Because the words are presented randomly, and without context, you may find this to be 
+        a good environment for improving your Instant Flow Recovery (IFR).<BR><BR>
+        The initial setting is 20 wpm with standard word spacing. At 20 wpm, the standard space between words is 420 milliseconds. 
+        <BR><BR>    
+        <a href="/phrases/ttr">Version 1</a> is also available.   
     </div>
 
 
@@ -91,21 +93,9 @@
     }
 
     function display_line(){
-        if (revealEl.checked){
-            setTimeout(() => {
-                document.getElementById("reveal_title").style.display = "block";
-                document.getElementById("reveal_title").innerText =  line;
-                setTimeout(() => {
-                    document.getElementById("reveal_title").style.display = "none";
-                    play_cw();
-                    }, displayTime);
-                            
-            },wordSpace);    
-        }else{
-            setTimeout(() => {
-                   play_cw();
-            },wordSpace);    
-        }    
+        setTimeout(() => {
+               play_cw();
+        },wordSpace);    
     }
 
     function getWordSpace(){

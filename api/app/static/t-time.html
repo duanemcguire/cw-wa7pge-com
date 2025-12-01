@@ -1,0 +1,38 @@
+<html>
+    <body>
+
+<button id="myButton">Click</button>
+<p id="status"></p>
+</body>
+
+<script>
+let clicked = false;
+
+// Count clicks
+document.getElementById("myButton").addEventListener("click", () => {
+  clicked = true;
+});
+
+// Helper: wait ms without blocking
+function wait(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+async function runLoop() {
+  for (let i = 0; i < 100; i++) {
+    clicked = false;  // reset for this iteration
+    document.getElementById("status").textContent = `Waiting step ${i + 1}...`;
+
+    await wait(2000); // non-blocking: clicks register normally
+
+    if (clicked) {
+      console.log(`Step ${i + 1}: button WAS clicked.`);
+    } else {
+      console.log(`Step ${i + 1}: button NOT clicked.`);
+    }
+  }
+}
+
+runLoop();
+</script>
+</html>

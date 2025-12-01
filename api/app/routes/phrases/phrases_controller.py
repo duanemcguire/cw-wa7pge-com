@@ -31,17 +31,20 @@ def simplify_cw_line(line):
 
 def getPhraseAttr():
     attr = {}
+    attr['wpm'] = 20
+    attr['ws'] = '1'
     current_file = os.path.abspath(__file__)
     current_dir = os.path.dirname(current_file)
     print(f"request.path: {request.path}")
     os.chdir(current_dir)
     TEXT_FOLDER = "text_files"
+    
 
     categories = sorted([f for f in os.listdir(TEXT_FOLDER)])
     
     if len(request.values) > 0:
         newCategory = 0
-        if request.path == '/phrases/ttr':
+        if request.path[0:12] == '/phrases/ttr':
             selected_category = 'Word'
         else:
             selected_category = request.values.get('category')
@@ -54,7 +57,13 @@ def getPhraseAttr():
             selected_file = request.values.get('filename')
         if newCategory == "1":
             selected_file = collections[0]
+        if 'wpm' in request.values:
+            attr['wpm'] = int(request.values.get('wpm'))    
+        if 'ws' in request.values:
+            attr['ws'] = request.values.get('ws')    
+
         category_dir = os.path.join(TEXT_FOLDER, selected_category)
+
         file_path = os.path.join(category_dir, selected_file)
         lines = []
         try:
@@ -69,7 +78,7 @@ def getPhraseAttr():
         # get the first category and collection  and go with that. 
         categories = sorted([f for f in os.listdir(TEXT_FOLDER)])
         selected_category = categories[0]
-        if request.path == '/phrases/ttr':
+        if request.path[0:12] == '/phrases/ttr' :
             selected_category = 'Word'
             newCategory = 1 
 
@@ -90,6 +99,8 @@ def getPhraseAttr():
     attr['selected_category'] = selected_category
     attr['selected_file'] = selected_file
     attr['lines'] = lines
+    attr['wpm_options'] =  [12,14,16,18,20,22,25,27,30,31,40]
+    attr['ws_options'] = ["1","1.2","1.4","1.6","1.8","2","2.2","2.4","2.6","2.8","3.0"]
     return attr
 
 
@@ -149,5 +160,19 @@ def ttr():
                            files=attr['collections'],
                            selected_category=attr['selected_category'], 
                            selected_file=attr['selected_file'], 
-                           lines=attr['lines'])
+                           lines=attr['lines'],
+                           attr=attr)
+
+@phrases.route('/ttr2', methods=['GET', 'POST'])
+
+def ttr2():
+    attr = getPhraseAttr()
+
+    return render_template('phrases/ttr2.html',
+                           categories=attr['categories'],
+                           files=attr['collections'],
+                           selected_category=attr['selected_category'], 
+                           selected_file=attr['selected_file'], 
+                           lines=attr['lines'],
+                           attr = attr)
 

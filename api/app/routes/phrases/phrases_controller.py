@@ -61,6 +61,8 @@ def getPhraseAttr():
             attr['wpm'] = int(request.values.get('wpm'))    
         if 'ws' in request.values:
             attr['ws'] = request.values.get('ws')    
+        if 'repititions' in request.values:
+            attr['repititions'] = request.values.get('repititions')    
 
         category_dir = os.path.join(TEXT_FOLDER, selected_category)
 
@@ -76,6 +78,7 @@ def getPhraseAttr():
     else:
         # form has not yet been submitted.
         # get the first category and collection  and go with that. 
+        attr['repititions'] = "1"
         categories = sorted([f for f in os.listdir(TEXT_FOLDER)])
         selected_category = categories[0]
         if request.path[0:12] == '/phrases/ttr' :
@@ -94,6 +97,7 @@ def getPhraseAttr():
                     lines.append(line)
         except Exception as e:
             line = f"Error reading file: {e}"
+                    
     attr['collections'] = collections
     attr['categories'] = categories
     attr['selected_category'] = selected_category
@@ -101,6 +105,7 @@ def getPhraseAttr():
     attr['lines'] = lines
     attr['wpm_options'] =  [12,14,16,18,20,22,25,27,30,31,40]
     attr['ws_options'] = ["1","1.2","1.4","1.6","1.8","2","2.2","2.4","2.6","2.8","3.0"]
+    
     return attr
 
 

@@ -14,6 +14,7 @@
 
 <div class="content" >
     <h2>Word flow/TTR</h2>
+    
     <div style="float: left">
         <form method="GET" id='theForm' >
             Word Collection: <select id="selectCollection" name="filename" style="width: 200px;">
@@ -30,12 +31,19 @@
             {% endfor %}
         </select>    
 
+
+        Repititions: <select name="repititions" id="repititions" style="width: 150px;" >
+            <option value="1">1</option>
+            <option value="2" {% if attr['repititions'] == '2' %} selected {% endif %}>2</option>
+            <option value="3" {% if attr['repititions'] == '3' %} selected {% endif %}>3</option>
+        </select>
+
         Word Spacing: <select name="ws" id="ws" style="width: 150px;" >
              {% for ws_option in attr.ws_options %} 
                 <option value="{{ws_option}}" {% if ws_option == attr['ws'] %}selected{% endif %}>{{ws_option}} {% if ws_option == "1" %} (Standard) {% endif %}</option>
             {% endfor %}
-        
-        </select><span><span id="wordSpace"></span> ms</span>
+        </select>
+<span><span id="wordSpace"></span> ms</span>
         <BR>
         <input type="hidden" name="newCategory" id="newCategory" value = "0">
 
@@ -53,8 +61,13 @@
         If a word is missed, ignore it. Focus on catching the next word. 
         Because the words are presented randomly, and without context, you may find this to be 
         a good environment for improving your IFR. <BR><BR>
+
+
         The initial setting is 20 wpm with standard word spacing. At 20 wpm, the standard space between words is 420 milliseconds. 
-        <BR><BR>Set the word collection, WPM, and word spacing so that you are missing some but not all of the words as they flow by. 
+        <BR><BR>
+        If you change the repititions to 2 or 3, you may confirm your recognition by listening again.
+        <BR><BR>            
+        Set the word collection, WPM, and word spacing so that you are missing some but not all of the words as they flow by. 
         That difficulty level will be the sweet spot for improving IFR.  
         <BR><BR>    
         <a href="/phrases/ttr">Version 1</a> is also available.   
@@ -68,26 +81,32 @@
     const player = new jscw();
     const wpmEl = document.getElementById('wpm')
     const wsEl = document.getElementById('ws')
+    const repEl = document.getElementById('repititions')
     const revealEl = document.getElementById('reveal')
 
     let lines = {{lines | safe}};
     let prefix = 'VVV  '
     let line = '';
+    let lastline = ''; 
     let displayTime = 1000;
     let wordSpace = getWordSpace();
     let stop = false;
+    let repititions = {{ attr['repititions'] }};
+    let repcount = 1000;
 
     function play_cw(){
         if (! stop) {
-            player.init();
-            wordSpace = getWordSpace();
-            player.setWpm(speed);
-            line = getLine();
-            player.onFinished = display_line;
-            player.play(prefix + " " + line);
-            prefix = "";
-        }    
-    }
+                player.init();
+                wordSpace = getWordSpace();
+                player.setWpm(speed);
+                line = getLine();
+                player.onFinished = display_line;
+                player.play(prefix + " " + line);
+                prefix = "";
+        }
+  
+    }    
+
 
     function stop_cw(){
         stop = true;
@@ -98,7 +117,7 @@
         wordSpace = getWordSpace()
         setTimeout(() => {
                play_cw();
-        },wordSpace);    
+        },wordSpace);
     }
 
     function getWordSpace(){
@@ -110,11 +129,18 @@
     }
 
     function getLine(){
-        randomIndex = Math.floor(Math.random() * lines.length);
-        line = lines[randomIndex].trim().replace("~"," ")
-        line = line.replace("("," = ")
-        line = line.replace(")"," = ")
-        line = line.replace("/n","") 
+        repcount++;
+        if (repcount >= repititions) {
+            randomIndex = Math.floor(Math.random() * lines.length);
+            line = lines[randomIndex].trim().replace("~"," ")
+            line = line.replace("("," = ")
+            line = line.replace(")"," = ")
+            line = line.replace("/n","")
+            lastline = line;
+            repcount = 0; 
+        } else {
+            line = lastline;
+        }    
         return line;
     }
 
@@ -126,6 +152,10 @@
 
     buttonStopCW.addEventListener('click', () =>{
         stop_cw()
+    });
+
+    repEl.addEventListener('change', function(event) {
+        repititions = repEl.value * 1;
     });
 
     wpmEl.addEventListener('change', function(event) {

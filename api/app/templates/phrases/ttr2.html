@@ -35,7 +35,7 @@
                 <option value="{{ws_option}}" {% if ws_option == attr['ws'] %}selected{% endif %}>{{ws_option}} {% if ws_option == "1" %} (Standard) {% endif %}</option>
             {% endfor %}
         
-        </select><span><span id="wordSpace">420</span> ms</span>
+        </select><span><span id="wordSpace"></span> ms</span>
         <BR>
         <input type="hidden" name="newCategory" id="newCategory" value = "0">
 
@@ -48,12 +48,14 @@
         <div class="line-display" id="reveal_title" style="display:block; font-size: 3em; padding: 5px; float: left; color: white" >|</div>    
     </div>
     <div style="margin: 5px; float: left; border: 1px solid black; padding: 3px; background-color: #eeeeee; max-width: 600px;" >
-        <H2>Time To Recognize / TTR Version 2</H2>
-        This version of the TTR exercise eliminates the option of flashing the word after it is sounded. Go with the flow. Focus on forward motion.   
+        <H2>Word Flow IFR / TTR Version 2</H2>
+        This is an Instant Flow Recovery (IFR) exercise. Go with the flow. Focus on forward motion.   
         If a word is missed, ignore it. Focus on catching the next word. 
         Because the words are presented randomly, and without context, you may find this to be 
-        a good environment for improving your Instant Flow Recovery (IFR).<BR><BR>
+        a good environment for improving your IFR. <BR><BR>
         The initial setting is 20 wpm with standard word spacing. At 20 wpm, the standard space between words is 420 milliseconds. 
+        <BR><BR>Set the word collection, WPM, and word spacing so that you are missing some but not all of the words as they flow by. 
+        That difficulty level will be the sweet spot for improving IFR.  
         <BR><BR>    
         <a href="/phrases/ttr">Version 1</a> is also available.   
     </div>
@@ -72,7 +74,7 @@
     let prefix = 'VVV  '
     let line = '';
     let displayTime = 1000;
-    let wordSpace = 420;
+    let wordSpace = getWordSpace();
     let stop = false;
 
     function play_cw(){
@@ -93,6 +95,7 @@
     }
 
     function display_line(){
+        wordSpace = getWordSpace()
         setTimeout(() => {
                play_cw();
         },wordSpace);    
@@ -102,6 +105,7 @@
         speed = wpmEl.options[wpmEl.selectedIndex].value
         ws = wsEl.options[wsEl.selectedIndex].value
         w = Math.floor(8400*ws/speed) 
+        document.getElementById('wordSpace').innerText = w;
         return w
     }
 

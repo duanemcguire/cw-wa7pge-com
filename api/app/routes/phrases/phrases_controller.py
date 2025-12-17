@@ -80,7 +80,7 @@ def getPhraseAttr():
         # get the first category and collection  and go with that. 
         attr['repititions'] = "1"
         categories = sorted([f for f in os.listdir(TEXT_FOLDER)])
-        selected_category = "categories[0]"
+        selected_category = categories[0]
         if request.path[0:12] == '/phrases/ttr' :
             selected_category = 'Word'
             newCategory = 1 

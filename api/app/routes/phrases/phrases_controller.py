@@ -80,10 +80,15 @@ def getPhraseAttr():
         # get the first category and collection  and go with that. 
         attr['repititions'] = "1"
         categories = sorted([f for f in os.listdir(TEXT_FOLDER)])
-        selected_category = categories[0]
+        selected_category = "categories[0]"
         if request.path[0:12] == '/phrases/ttr' :
             selected_category = 'Word'
             newCategory = 1 
+        if request.path[0:20] == '/phrases/phrase-flow' :
+            selected_category = 'Common Phrase'
+            newCategory = 1 
+
+
 
         collections_path = os.path.join(TEXT_FOLDER, selected_category)
         collections = sorted([f for f in os.listdir(collections_path)])
@@ -173,6 +178,19 @@ def ttr():
     attr = getPhraseAttr()
 
     return render_template('phrases/ttr2.html',
+                           categories=attr['categories'],
+                           files=attr['collections'],
+                           selected_category=attr['selected_category'], 
+                           selected_file=attr['selected_file'], 
+                           lines=attr['lines'],
+                           attr = attr)
+
+
+@phrases.route('/phrase-flow', methods=['GET', 'POST'])
+def phrase_flow():
+    attr = getPhraseAttr()
+
+    return render_template('phrases/phrase-flow.html',
                            categories=attr['categories'],
                            files=attr['collections'],
                            selected_category=attr['selected_category'], 

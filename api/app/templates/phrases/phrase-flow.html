@@ -1,0 +1,218 @@
+{% extends 'base.html' %}
+    
+{% block content %}
+    
+<style>
+    button {margin-bottom: 4px;}
+    @media (max-width: 768px) {
+        #hotkeys {
+            display: none;
+        }
+    }
+</style>
+<script src="api/app/static/js/jscwlib.js"></script>
+
+<div class="content" >
+    <h2>Phrase Flow/IFR</h2>
+    
+    <div style="float: left">
+        <form method="GET" id='theForm' >
+            Category: <select name="category" id='category' style="max-width: 200px;">
+                {% for category in categories %}
+                    {% if category != 'Word' and category != 'Experimental'  and category != 'Pangram' %}
+                        <option value="{{ category }}" {% if category==selected_category %}selected{% endif %}>{{ category }}</option>
+                    {% endif %}    
+                {% endfor %}
+            </select>        
+
+            Collection: <select id="selectCollection" name="filename" style="width: 200px;">
+                {% for file in files %}
+                    <option value="{{ file }}" {% if file == selected_file %}selected{% endif %}>{{ file }}</option>
+                {% endfor %}
+            </select>
+
+            WPM: 
+
+        <select name="wpm" id="wpm" style="width: 150px;" >
+            {% for wpm_option in attr.wpm_options %} 
+                <option value="{{wpm_option}}" {% if wpm_option == attr['wpm'] %}selected{% endif %}>{{wpm_option}} </option>
+            {% endfor %}
+        </select>    
+
+
+        Repetitions: <select name="repititions" id="repititions" style="width: 150px;" >
+            <option value="1">1</option>
+            <option value="2" {% if attr['repititions'] == '2' %} selected {% endif %}>2</option>
+            <option value="3" {% if attr['repititions'] == '3' %} selected {% endif %}>3</option>
+        </select>
+
+        Word Spacing: <select name="ws" id="ws" style="width: 150px;" >
+             {% for ws_option in attr.ws_options %} 
+                <option value="{{ws_option}}" {% if ws_option == attr['ws'] %}selected{% endif %}>{{ws_option}} {% if ws_option == "1" %} (Standard) {% endif %}</option>
+            {% endfor %}
+        </select>
+<span><span id="wordSpace"></span> ms</span>
+        <BR>
+        <input type="hidden" name="newCategory" id="newCategory" value = "0">
+
+        </form>
+        
+        <button id="buttonPlayCW"  ">Play</button>
+        <button id="buttonStopCW"  ">Stop</button>
+        <BR>
+        <button id="buttonDisplayTitle" style="visibility: visible;">Reveal the {{selected_category}}</button>
+        <button id="buttonHideTitle" style="visibility: hidden;">Hide the {{selected_category}}</button>
+        <BR>    
+        <div class="line-display" id="reveal_title" style="display:none;  padding: 5px; float: left;" ></div>    
+    </div>
+    <div style="margin: 5px; float: left; border: 1px solid black; padding: 3px; background-color: #eeeeee; max-width: 600px;" >
+        <H2>Phrase Flow</H2>
+        This is a phrase flow and Instant Flow Recvery (IFR) exercise. Go with the flow. Focus on forward motion.   
+        If a word is missed, ignore it. Focus on catching the next word. 
+        <BR><BR>
+
+        The initial setting is 20 wpm with standard word spacing. At 20 wpm, the standard space between words is 420 milliseconds. 
+        <BR><BR>            
+        Set the phrase collection, WPM, and word spacing so that you are missing some but not all of the words as they flow by. 
+        That difficulty level will be the sweet spot for improving your flow recovery skills.  
+        <BR><BR>    
+        If you change the repetitions to 2 or 3, you may confirm your recognition by listening again.
+        
+    </div>
+
+
+</div>
+    
+
+ <script>
+    const player = new jscw();
+    const wpmEl = document.getElementById('wpm')
+    const wsEl = document.getElementById('ws')
+    const repEl = document.getElementById('repititions')
+    const revealEl = document.getElementById('reveal')
+
+    let lines = {{lines | safe}};
+    let prefix = 'VVV  '
+    let line = '';
+    let lastline = ''; 
+    let displayTime = 1000;
+    let wordSpace = getWordSpace();
+    let stop = false;
+    let repititions = {{ attr['repititions'] }};
+    let repcount = 1000;
+
+    function play_cw(){
+        if (! stop) {
+                player.init();
+                wordSpace = getWordSpace();
+                player.setWpm(speed);
+                player.setEws(getEWS());
+                line = getLine();
+                player.onFinished = display_line;
+                player.play(prefix + " " + line);
+                prefix = "  =   ";
+        }
+  
+    }    
+
+
+    function stop_cw(){
+        stop = true;
+        player.stop();
+    }
+
+    function display_line(){
+        wordSpace = getWordSpace()
+        
+        setTimeout(() => {
+               play_cw();
+        },wordSpace);
+    }
+
+    function display_title(){
+        document.getElementById("reveal_title").innerText = song_title;
+        document.getElementById("reveal_title").style.display = "block";
+    }
+
+
+    function getWordSpace(){
+        speed = wpmEl.options[wpmEl.selectedIndex].value
+        ws = wsEl.options[wsEl.selectedIndex].value
+        w = Math.floor(8400*ws/speed) 
+        document.getElementById('wordSpace').innerText = w;
+        return w
+    }
+
+    function getEWS(){
+        return wsEl.options[wsEl.selectedIndex].value - 1;
+        
+    }
+
+
+
+    function getLine(){
+        repcount++;
+        if (repcount >= repititions) {
+            randomIndex = Math.floor(Math.random() * lines.length);
+            line = lines[randomIndex].trim().replace("~"," ")
+            line = line.replace("("," = ")
+            line = line.replace(")"," = ")
+            line = line.replace("/n","")
+            lastline = line;
+            repcount = 0; 
+        } else {
+            line = lastline;
+        }
+        document.getElementById('reveal_title').innerText = line;    
+        return line;
+    }
+
+
+    buttonPlayCW.addEventListener('click', () =>{
+        stop = false;
+        play_cw(line)
+    });
+
+    buttonStopCW.addEventListener('click', () =>{
+        stop_cw()
+    });
+
+    buttonDisplayTitle.addEventListener('click', () => {
+        document.getElementById('reveal_title').style.display = 'block';
+        buttonHideTitle.style.visibility = 'visible';
+
+    });
+    buttonHideTitle.addEventListener('click', () => {
+        document.getElementById('reveal_title').style.display = 'none';
+        buttonHideTitle.style.visibility = 'hidden';
+        
+    });
+
+
+    repEl.addEventListener('change', function(event) {
+        repititions = repEl.value * 1;
+    });
+
+    wpmEl.addEventListener('change', function(event) {
+        document.getElementById('wordSpace').innerText = getWordSpace();
+    });
+
+    wsEl.addEventListener('change', function(event) {
+        document.getElementById('wordSpace').innerText = getWordSpace();
+    });
+
+    category = document.getElementById('category');
+    category.addEventListener('change', () => {
+        newCategory = document.getElementById('newCategory');
+        newCategory.value = 1;        
+        theForm.submit();
+    });
+
+
+    selectCollection.addEventListener('change', () => {
+        theForm.submit();
+    });
+
+
+</SCRIPT>    
+{% endblock %}

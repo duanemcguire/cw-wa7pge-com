@@ -155,9 +155,8 @@ def song_titles_sending():
                            selected_file=attr['selected_file'], 
                            lines=attr['lines'])
 
-@phrases.route('/ttr', methods=['GET', 'POST'])
-
-def ttr():
+@phrases.route('/ttr1', methods=['GET', 'POST'])
+def ttr1():
     attr = getPhraseAttr()
 
     return render_template('phrases/ttr.html',
@@ -169,8 +168,8 @@ def ttr():
                            attr=attr)
 
 @phrases.route('/ttr2', methods=['GET', 'POST'])
-
-def ttr2():
+@phrases.route('/ttr', methods=['GET', 'POST'])
+def ttr():
     attr = getPhraseAttr()
 
     return render_template('phrases/ttr2.html',

@@ -166,7 +166,7 @@ def song_titles_sending():
 def ttr():
     attr = getPhraseAttr()
 
-    return render_template('phrases/ttr2.html',
+    return render_template('phrases/ttr.html',
                            categories=attr['categories'],
                            files=attr['collections'],
                            selected_category=attr['selected_category'], 

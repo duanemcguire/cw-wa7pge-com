@@ -77,7 +77,7 @@
 
  <script>
     const player = new jscw();
-    player.init();   // <-- only once
+
     const wpmEl = document.getElementById('wpm')
     const wsEl = document.getElementById('ws')
     const repEl = document.getElementById('repititions')
@@ -88,14 +88,22 @@
     let line = '';
     let lastline = ''; 
     let displayTime = 1000;
-    let wordSpace = getWordSpace();
     let stop = false;
     let repititions = {{ attr['repititions'] }};
     let repcount = 1000;
+    let wordSpace = 1;
+    let speed = wpmEl.options[wpmEl.selectedIndex].value
+
+
+    player.init();   // <-- only once
+    player.setWpm(speed);
+
+
 
     function play_cw(){
         if (! stop) {
                 wordSpace = getWordSpace();
+                speed = getSpeed()
                 player.setWpm(speed);
                 line = getLine();
                 player.onFinished = display_line;
@@ -118,6 +126,19 @@
         }
     }
 
+
+    function getSpeed(){
+        return 
+    }
+    function getWordSpace(){
+        const ws = wsEl.options[wsEl.selectedIndex].value
+        const sp = getSpeed()
+        const w = Math.floor(8400*ws/sp) 
+        document.getElementById('wordSpace').innerText = w;
+        return w
+    }
+
+
     let nextTimeout = null;
 
     function display_line(){
@@ -128,13 +149,7 @@
         },wordSpace);
     }
 
-    function getWordSpace(){
-        speed = wpmEl.options[wpmEl.selectedIndex].value
-        ws = wsEl.options[wsEl.selectedIndex].value
-        w = Math.floor(8400*ws/speed) 
-        document.getElementById('wordSpace').innerText = w;
-        return w
-    }
+
 
     function getLine(){
         repcount++;

@@ -76,122 +76,145 @@
     
 
  <script>
-    const player = new jscw();
 
-    const wpmEl = document.getElementById('wpm')
-    const wsEl = document.getElementById('ws')
-    const repEl = document.getElementById('repititions')
-    const revealEl = document.getElementById('reveal')
+/* ===============================
+   Constants
+================================ */
+const repEl = document.getElementById('repititions')
+const wpmEl = document.getElementById('wpm')
+const wsEl = document.getElementById('ws')
 
-    let lines = {{lines | safe}};
-    let prefix = 'VVV  '
-    let line = '';
-    let lastline = ''; 
-    let displayTime = 1000;
-    let stop = false;
-    let repititions = {{ attr['repititions'] }};
-    let repcount = 1000;
-    let wordSpace = 1;
-    let speed = wpmEl.options[wpmEl.selectedIndex].value
+/* ===============================
+   CW Player State
+================================ */
 
+let player = null;
+let running = false;
+let nextTimeout = null;
+let lines = {{ lines | safe }};
+let prefix = 'VVV  ';
+let lastLine = '';
+let repcount = 0;
+let repititions = 1;
 
-    player.init();   // <-- only once
-    player.setWpm(speed);
+/* ===============================
+   Initialization
+================================ */
 
+function initPlayer() {
+    if (player) return;
 
+    player = new jscw();
+    player.init();
 
-    function play_cw(){
-        if (! stop) {
-                wordSpace = getWordSpace();
-                speed = getSpeed()
-                player.setWpm(speed);
-                line = getLine();
-                player.onFinished = display_line;
-                player.play(prefix + " " + line);
-                prefix = "";
-        }
-  
-    }    
+    player.onFinished = scheduleNext;
+}
 
+/* ===============================
+   Play / Stop Controls
+================================ */
 
-    function stop_cw(){
-        stop = true;
-        if (nextTimeout) {
-            clearTimeout(nextTimeout);
-            nextTimeout = null;
-        }
+function startCW() {
+    if (running) return;
+
+    running = true;
+    prefix = 'VVV  ';
+    initPlayer();
+    playNext();
+}
+
+function stopCW() {
+    running = false;
+
+    if (nextTimeout) {
+        clearTimeout(nextTimeout);
+        nextTimeout = null;
+    }
+
+    if (player) {
         player.stop();
+
+        // Close AudioContext if exposed (Android friendly)
         if (player.context && player.context.state !== 'closed') {
             player.context.close();
         }
+
+        player = null;
+    }
+}
+
+/* ===============================
+   Playback Loop
+================================ */
+
+function playNext() {
+    if (!running || !player) return;
+
+    const speed = Number(wpmEl.value);
+    player.setWpm(speed);
+
+    const word = getLine();
+    player.play(prefix + " " + word);
+
+    prefix = '';
+}
+
+function scheduleNext() {
+    if (!running) return;
+
+    const delay = getWordSpace();
+
+    nextTimeout = setTimeout(() => {
+        playNext();
+    }, delay);
+}
+
+/* ===============================
+   Helpers
+================================ */
+
+function getWordSpace() {
+    const speed = Number(wpmEl.value);
+    const ws = Number(wsEl.value);
+    const spacing = Math.floor(8400 * ws / speed);
+
+    document.getElementById('wordSpace').innerText = spacing;
+    return spacing;
+}
+
+function getLine() {
+    repcount++;
+
+    if (repcount >= repititions) {
+        const randomIndex = Math.floor(Math.random() * lines.length);
+        lastLine = lines[randomIndex]
+            .trim()
+            .replace("~", " ")
+            .replace("(", " = ")
+            .replace(")", " = ");
+
+        repcount = 0;
     }
 
+    return lastLine;
+}
 
-    function getSpeed(){
-        return 
-    }
-    function getWordSpace(){
-        const ws = wsEl.options[wsEl.selectedIndex].value
-        const sp = getSpeed()
-        const w = Math.floor(8400*ws/sp) 
-        document.getElementById('wordSpace').innerText = w;
-        return w
-    }
+/* ===============================
+   Event Wiring
+================================ */
 
+buttonPlayCW.addEventListener('click', startCW);
+buttonStopCW.addEventListener('click', stopCW);
 
-    let nextTimeout = null;
+repEl.addEventListener('change', () => {
+    repititions = Number(repEl.value);
+});
 
-    function display_line(){
-        if (stop) return;
-        wordSpace = getWordSpace()
-        nextTimeout = setTimeout(() => {
-               play_cw();
-        },wordSpace);
-    }
+wpmEl.addEventListener('change', getWordSpace);
+wsEl.addEventListener('change', getWordSpace);
 
-
-
-    function getLine(){
-        repcount++;
-        if (repcount >= repititions) {
-            randomIndex = Math.floor(Math.random() * lines.length);
-            line = lines[randomIndex].trim().replace("~"," ")
-            line = line.replace("("," = ")
-            line = line.replace(")"," = ")
-            line = line.replace("/n","")
-            lastline = line;
-            repcount = 0; 
-        } else {
-            line = lastline;
-        }    
-        return line;
-    }
-
-
-    buttonPlayCW.addEventListener('click', () =>{
-        stop = false;
-        play_cw(line)
-    });
-
-    buttonStopCW.addEventListener('click', () =>{
-        stop_cw()
-    });
-
-    repEl.addEventListener('change', function(event) {
-        repititions = repEl.value * 1;
-    });
-
-    wpmEl.addEventListener('change', function(event) {
-        document.getElementById('wordSpace').innerText = getWordSpace();
-    });
-
-    wsEl.addEventListener('change', function(event) {
-        document.getElementById('wordSpace').innerText = getWordSpace();
-    });
-    selectCollection.addEventListener('change', () => {
-        theForm.submit();
-    });
-
-
-</SCRIPT>    
+selectCollection.addEventListener('change', () => {
+    theForm.submit();
+});
+</script>    
 {% endblock %}

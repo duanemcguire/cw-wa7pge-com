@@ -10,7 +10,7 @@
         }
     }
 </style>
-<script src="api/app/static/js/jscwlib.js"></script>
+<script src="/static/js/jscwlib.js"></script>
 
 <div class="content" >
     <h2>Phrase Flow/IFR</h2>
@@ -60,10 +60,6 @@
         <button id="buttonPlayCW"  ">Play</button>
         <button id="buttonStopCW"  ">Stop</button>
         <BR>
-        <button id="buttonDisplayTitle" style="visibility: visible;">Reveal the {{selected_category}}</button><BR>
-        <button id="buttonHideTitle" style="visibility: hidden;">Hide the {{selected_category}}</button>
-        <BR>    
-        <div class="line-display" id="reveal_title" style="display:none;  padding: 5px; float: left;" ></div>    
     </div>
     <div style="margin: 5px; float: left; border: 1px solid black; padding: 3px; background-color: #eeeeee; max-width: 600px;" >
         <H2>Phrase Flow</H2>
@@ -86,73 +82,116 @@
     
 
  <script>
-    const player = new jscw();
-    const wpmEl = document.getElementById('wpm')
-    const wsEl = document.getElementById('ws')
-    const repEl = document.getElementById('repititions')
-    const revealEl = document.getElementById('reveal')
 
-    let lines = {{lines | safe}};
-    let prefix = 'VVV  '
-    let line = '';
-    let lastline = ''; 
-    let displayTime = 1000;
-    let wordSpace = getWordSpace();
-    let stop = false;
-    let repititions = {{ attr['repititions'] }};
-    let repcount = 1000;
+/* ===============================
+   Constants
+================================ */
+const repEl = document.getElementById('repititions')
+const wpmEl = document.getElementById('wpm')
+const wsEl = document.getElementById('ws')
+category = document.getElementById('category');
 
-    function play_cw(){
-        if (! stop) {
-                player.init();
-                wordSpace = getWordSpace();
-                player.setWpm(speed);
-                player.setEws(getEWS());
-                line = getLine();
-                player.onFinished = display_line;
-                player.play(prefix + " " + line);
-                prefix = "  =   ";
-        }
-  
-    }    
+/* ===============================
+   CW Player State
+================================ */
 
+let player = null;
+let running = false;
+let nextTimeout = null;
+let lines = {{ lines | safe }};
+let prefix = 'VVV  ';
+let lastLine = '';
+let repcount = 0;
+let repititions = {{ attr['repititions'] }};
 
-    function stop_cw(){
-        stop = true;
+/* ===============================
+   Initialization
+================================ */
+
+function initPlayer() {
+    if (player) return;
+
+    player = new jscw();
+    player.init();
+
+    player.onFinished = scheduleNext;
+}
+
+/* ===============================
+   Play / Stop Controls
+================================ */
+
+function startCW() {
+    if (running) return;
+
+    running = true;
+    prefix = 'VVV  ';
+    initPlayer();
+    playNext();
+}
+
+function stopCW() {
+    running = false;
+
+    if (nextTimeout) {
+        clearTimeout(nextTimeout);
+        nextTimeout = null;
+    }
+
+    if (player) {
         player.stop();
+
+        // Close AudioContext if exposed (Android friendly)
+        if (player.context && player.context.state !== 'closed') {
+            player.context.close();
+        }
+
+        player = null;
     }
+}
 
-    function display_line(){
-        wordSpace = getWordSpace()
-        
-        setTimeout(() => {
-               play_cw();
-        },wordSpace);
-    }
+/* ===============================
+   Playback Loop
+================================ */
 
-    function display_title(){
-        document.getElementById("reveal_title").innerText = song_title;
-        document.getElementById("reveal_title").style.display = "block";
-    }
+function playNext() {
+    if (!running || !player) return;
 
+    const speed = Number(wpmEl.value);
+    player.setWpm(speed);
 
-    function getWordSpace(){
-        speed = wpmEl.options[wpmEl.selectedIndex].value
-        ws = wsEl.options[wsEl.selectedIndex].value
-        w = Math.floor(8400*ws/speed) 
-        document.getElementById('wordSpace').innerText = w;
-        return w
-    }
+    const word = getLine();
+    console.log(word);
+    player.play(prefix + " " + word);
+    prefix = "  =   ";
 
-    function getEWS(){
-        return wsEl.options[wsEl.selectedIndex].value - 1;
-        
-    }
+}
 
+function scheduleNext() {
+    if (!running) return;
 
+    const delay = getWordSpace();
 
-    function getLine(){
-        repcount++;
+    nextTimeout = setTimeout(() => {
+        playNext();
+    }, delay);
+}
+
+/* ===============================
+   Helpers
+================================ */
+
+function getWordSpace() {
+    const speed = Number(wpmEl.value);
+    const ws = Number(wsEl.value);
+    const spacing = Math.floor(8400 * ws / speed);
+
+    document.getElementById('wordSpace').innerText = spacing;
+    return spacing;
+}
+
+function getLine() {
+    repcount++;
         if (repcount >= repititions) {
             randomIndex = Math.floor(Math.random() * lines.length);
             line = lines[randomIndex].trim().replace("~"," ")
@@ -164,56 +203,43 @@
         } else {
             line = lastline;
         }
-        document.getElementById('reveal_title').innerText = line;    
-        return line;
-    }
+    return line;
+}
+
+function display_title(){
+    document.getElementById("reveal_title").innerText = song_title;
+    document.getElementById("reveal_title").style.display = "block";
+}
 
 
-    buttonPlayCW.addEventListener('click', () =>{
-        stop = false;
-        play_cw(line)
-    });
-
-    buttonStopCW.addEventListener('click', () =>{
-        stop_cw()
-    });
-
-    buttonDisplayTitle.addEventListener('click', () => {
-        document.getElementById('reveal_title').style.display = 'block';
-        buttonHideTitle.style.visibility = 'visible';
-
-    });
-    buttonHideTitle.addEventListener('click', () => {
-        document.getElementById('reveal_title').style.display = 'none';
-        buttonHideTitle.style.visibility = 'hidden';
-        
-    });
 
 
-    repEl.addEventListener('change', function(event) {
-        repititions = repEl.value * 1;
-    });
+/* ===============================
+   Event Wiring
+================================ */
 
-    wpmEl.addEventListener('change', function(event) {
-        document.getElementById('wordSpace').innerText = getWordSpace();
-    });
+buttonPlayCW.addEventListener('click', startCW);
+buttonStopCW.addEventListener('click', stopCW);
 
-    wsEl.addEventListener('change', function(event) {
-        document.getElementById('wordSpace').innerText = getWordSpace();
-    });
+repEl.addEventListener('change', () => {
+    repititions = Number(repEl.value);
+});
 
-    category = document.getElementById('category');
-    category.addEventListener('change', () => {
+wpmEl.addEventListener('change', getWordSpace);
+wsEl.addEventListener('change', getWordSpace);
+
+category.addEventListener('change', () => {
         newCategory = document.getElementById('newCategory');
         newCategory.value = 1;        
         theForm.submit();
     });
 
 
-    selectCollection.addEventListener('change', () => {
-        theForm.submit();
-    });
+selectCollection.addEventListener('change', () => {
+    theForm.submit();
+});
 
 
-</SCRIPT>    
+
+</script>
 {% endblock %}

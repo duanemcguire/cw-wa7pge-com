@@ -1,0 +1,131 @@
+<script>
+    const player = new jscw();
+    const wpmEl = document.getElementById('wpm')
+    const wsEl = document.getElementById('ws')
+    const repEl = document.getElementById('repititions')
+    const revealEl = document.getElementById('reveal')
+
+    let lines = {{lines | safe}};
+    let prefix = 'VVV  '
+    let line = '';
+    let lastline = ''; 
+    let displayTime = 1000;
+    let wordSpace = getWordSpace();
+    let stop = false;
+    let repititions = {{ attr['repititions'] }};
+    let repcount = 1000;
+
+    function play_cw(){
+        if (! stop) {
+                player.init();
+                wordSpace = getWordSpace();
+                player.setWpm(speed);
+                player.setEws(getEWS());
+                line = getLine();
+                player.onFinished = display_line;
+                player.play(prefix + " " + line);
+                prefix = "  =   ";
+        }
+  
+    }    
+
+
+    function stop_cw(){
+        stop = true;
+        player.stop();
+    }
+
+    function display_line(){
+        wordSpace = getWordSpace()
+        
+        setTimeout(() => {
+               play_cw();
+        },wordSpace);
+    }
+
+    function display_title(){
+        document.getElementById("reveal_title").innerText = song_title;
+        document.getElementById("reveal_title").style.display = "block";
+    }
+
+
+    function getWordSpace(){
+        speed = wpmEl.options[wpmEl.selectedIndex].value
+        ws = wsEl.options[wsEl.selectedIndex].value
+        w = Math.floor(8400*ws/speed) 
+        document.getElementById('wordSpace').innerText = w;
+        return w
+    }
+
+    function getEWS(){
+        return wsEl.options[wsEl.selectedIndex].value - 1;
+        
+    }
+
+
+
+    function getLine(){
+        repcount++;
+        if (repcount >= repititions) {
+            randomIndex = Math.floor(Math.random() * lines.length);
+            line = lines[randomIndex].trim().replace("~"," ")
+            line = line.replace("("," = ")
+            line = line.replace(")"," = ")
+            line = line.replace("/n","")
+            lastline = line;
+            repcount = 0; 
+        } else {
+            line = lastline;
+        }
+        document.getElementById('reveal_title').innerText = line;    
+        return line;
+    }
+
+
+    buttonPlayCW.addEventListener('click', () =>{
+        stop = false;
+        play_cw(line)
+    });
+
+    buttonStopCW.addEventListener('click', () =>{
+        stop_cw()
+    });
+
+    buttonDisplayTitle.addEventListener('click', () => {
+        document.getElementById('reveal_title').style.display = 'block';
+        buttonHideTitle.style.visibility = 'visible';
+
+    });
+    buttonHideTitle.addEventListener('click', () => {
+        document.getElementById('reveal_title').style.display = 'none';
+        buttonHideTitle.style.visibility = 'hidden';
+        
+    });
+
+
+    repEl.addEventListener('change', function(event) {
+        repititions = repEl.value * 1;
+    });
+
+    wpmEl.addEventListener('change', function(event) {
+        document.getElementById('wordSpace').innerText = getWordSpace();
+    });
+
+    wsEl.addEventListener('change', function(event) {
+        document.getElementById('wordSpace').innerText = getWordSpace();
+    });
+
+    category = document.getElementById('category');
+    category.addEventListener('change', () => {
+        newCategory = document.getElementById('newCategory');
+        newCategory.value = 1;        
+        theForm.submit();
+    });
+
+
+    selectCollection.addEventListener('change', () => {
+        theForm.submit();
+    });
+
+
+</SCRIPT>    

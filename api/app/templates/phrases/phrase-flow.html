@@ -13,7 +13,7 @@
 <script src="/static/js/jscwlib.js"></script>
 
 <div class="content" >
-    <h2>Phrase Flow/IFR</h2>
+    <h2>Phrase Flow / IFR</h2>
     
     <div style="float: left">
         <form method="GET" id='theForm' >
@@ -62,7 +62,7 @@
         <BR>
     </div>
     <div style="margin: 5px; float: left; border: 1px solid black; padding: 3px; background-color: #eeeeee; max-width: 600px;" >
-        <H2>Phrase Flow</H2>
+        <H2>Phrase Flow / Instant Flow recovery</H2>
         This is a phrase flow and Instant Flow Recvery (IFR) exercise. Go with the flow. Focus on forward motion.   
         If a word is missed, ignore it. Focus on catching the next word. 
         <BR><BR>
@@ -103,6 +103,7 @@ let prefix = 'VVV  ';
 let lastLine = '';
 let repcount = 0;
 let repititions = {{ attr['repititions'] }};
+document.getElementById('wordSpace').innerText = getWordSpace();
 
 /* ===============================
    Initialization

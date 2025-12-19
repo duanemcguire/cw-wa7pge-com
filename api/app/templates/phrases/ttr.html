@@ -93,7 +93,8 @@ let lines = {{ lines | safe }};
 let prefix = 'VVV  ';
 let lastLine = '';
 let repcount = 0;
-let repititions = 1;
+let repititions = {{ attr['repititions'] }};
+document.getElementById('wordSpace').innerText = getWordSpace();
 
 /* ===============================
    Initialization

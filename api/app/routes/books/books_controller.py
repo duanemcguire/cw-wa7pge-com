@@ -107,12 +107,13 @@ def verses(text_dir,verse_term,book_title):
         selectedVerse=selectedVerse,
         selectedWPM=selectedWPM*1,
         book_title=book_title,
-        verse_term=verse_term
+        verse_term=verse_term,
+        page_title = "CW " + book_title
         )    
 
 @books.route('/winnie')
 def winnie():
-    return render_template('books/winnie.html')
+    return render_template('books/winnie.html', page_title = "CW Winnie The Pooh")
 
 @books.route('/garden', methods=['GET', 'POST'])
 def garden():

@@ -8,7 +8,14 @@
 
 <html>
 	<head>
-		<title>CW WA7PGE Morse Code Practice</title>
+
+		<title>
+		{% if page_title is defined %}
+			{{ page_title }}
+		{% else %}	
+			CW WA7PGE Morse Code Practice
+		{% endif %}
+		</title>
 		<meta charset="utf-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
 		<link rel="stylesheet" href="/static/{{ site_template }}/assets/css/main.css" />

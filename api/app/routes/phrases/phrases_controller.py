@@ -139,7 +139,8 @@ def songtitles():
                            files=attr['collections'],
                            selected_category=attr['selected_category'], 
                            selected_file=attr['selected_file'], 
-                           lines=attr['lines'])
+                           lines=attr['lines'],
+                           page_title = 'CW Phrase Copy Practice')
 
 
 ## SENDING
@@ -158,7 +159,8 @@ def song_titles_sending():
                            files=attr['collections'],
                            selected_category=attr['selected_category'], 
                            selected_file=attr['selected_file'], 
-                           lines=attr['lines'])
+                           lines=attr['lines'],
+                           page_title = 'CW Phrase Sending Practice')
 
 
 @phrases.route('/ttr2', methods=['GET', 'POST'])
@@ -172,7 +174,8 @@ def ttr():
                            selected_category=attr['selected_category'], 
                            selected_file=attr['selected_file'], 
                            lines=attr['lines'],
-                           attr = attr)
+                           attr = attr,
+                           page_title = 'CW Word Flow Practice')
 
 
 @phrases.route('/phrase-flow', methods=['GET', 'POST'])
@@ -185,5 +188,6 @@ def phrase_flow():
                            selected_category=attr['selected_category'], 
                            selected_file=attr['selected_file'], 
                            lines=attr['lines'],
-                           attr = attr)
+                           attr = attr,
+                           page_title = 'CW Phrase Flow Practice')
 

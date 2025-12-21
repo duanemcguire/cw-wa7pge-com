@@ -106,7 +106,7 @@ function initPlayer() {
     player = new jscw();
     player.init();
 
-    player.onFinished = scheduleNext;
+    player.onFinished = playNext;
 }
 
 /* ===============================
@@ -124,12 +124,6 @@ function startCW() {
 
 function stopCW() {
     running = false;
-
-    if (nextTimeout) {
-        clearTimeout(nextTimeout);
-        nextTimeout = null;
-    }
-
     if (player) {
         player.stop();
 
@@ -153,20 +147,11 @@ function playNext() {
     player.setWpm(speed);
 
     const word = getLine();
-    player.play(prefix + " " + word);
+    player.play(prefix + " " + word + " ");
 
     prefix = '';
 }
 
-function scheduleNext() {
-    if (!running) return;
-
-    const delay = getWordSpace();
-
-    nextTimeout = setTimeout(() => {
-        playNext();
-    }, delay);
-}
 
 /* ===============================
    Helpers

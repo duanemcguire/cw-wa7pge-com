@@ -98,7 +98,6 @@ category = document.getElementById('category');
 
 let player = null;
 let running = false;
-let nextTimeout = null;
 let lines = {{ lines | safe }};
 let prefix = 'VVV  ';
 let lastLine = '';
@@ -183,7 +182,6 @@ function getWordSpace() {
 function getLine() {
     repcount++;
         let line = null;
-        let lastline = null;
         if (repcount >= repititions) {
             randomIndex = Math.floor(Math.random() * lines.length);
             line = lines[randomIndex].trim().replace("~"," ")

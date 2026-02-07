@@ -111,6 +111,11 @@ def verses(text_dir,verse_term,book_title):
         page_title = "CW " + book_title
         )    
 
+
+@books.route('/')
+def index():
+    return render_template('books/index.html', page_title = "CW Books")
+
 @books.route('/winnie')
 def winnie():
     return render_template('books/winnie.html', page_title = "CW Winnie The Pooh")

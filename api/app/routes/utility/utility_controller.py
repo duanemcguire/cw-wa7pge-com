@@ -29,6 +29,7 @@ def licw_classes():
     #beginner-only
     #intermediate
     #advanced
+    #forums
     calEvents = {}
     caltype = ""
     user_tz = "America/New_York"

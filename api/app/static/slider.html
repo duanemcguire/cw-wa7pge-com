@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Slider with Synced Input</title>
+<style>
+  body {
+    font-family: sans-serif;
+    padding: 40px;
+  }
+  input[type="number"] {
+    width: 80px;
+    margin-left: 10px;
+  }
+</style>
+</head>
+<body>
+
+<label>
+  Value:
+  <input
+    type="number"
+    id="numberInput"
+    min="300"
+    max="900"
+    step="10"
+    value="600"
+    required
+  >
+</label>
+
+<br><br>
+
+
+
+<script>
+  const input = document.getElementById('numberInput');
+
+  input.addEventListener('change', () => {
+    if (isNaN(input.value)){
+        input.value = 600;
+    }
+    const min = Number(input.min);
+    const max = Number(input.max);
+    const val = Number(input.value);
+
+    if (val < min) input.value = min;
+    if (val > max) input.value = max;
+    input.value = Math.round(input.value / 5) * 5
+  });
+</script>
+
+</body>
+</html>

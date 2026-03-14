@@ -1,4 +1,4 @@
-# flask-template
+# cw.wa7pge.com
 
 This is an example [Flask](https://flask.palletsprojects.com/) project
 template.

@@ -12,6 +12,13 @@ template:
 		echo "Template has already been ejected."; \
 	fi
 
+.PHONY: install-hook
+install-hook:
+	@echo
+
+.PHONY: install-hook-pre
+install-hook-pre:
+	@echo
 
 .PHONY: config-hook
 config-hook:

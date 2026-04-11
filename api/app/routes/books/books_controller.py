@@ -87,8 +87,12 @@ def verses(text_dir,verse_term,book_title):
     verses, TEXT_FOLDER = get_verse_files(text_dir)
     selectedVerse = request.form.get("verseSelect")
     selectedWPM = request.form.get("wpm")
-    if not selectedWPM: 
+    if not selectedWPM:
         selectedWPM = "20"
+    selectedWS = request.form.get("ws")
+    if not selectedWS:
+        selectedWS = "1"
+    ws_options = ["1","1.2","1.4","1.6","1.8","2","2.2","2.4","2.6","2.8","3.0"]
     verseText = ""
     verseCW = ""
     if selectedVerse:
@@ -100,16 +104,18 @@ def verses(text_dir,verse_term,book_title):
             verseText = f"Error: selected verse not found."
             verseCW = "Error"
         verseCW = verseText.replace("\n","   ").replace('"','')
-    return render_template('books/garden.html', 
-        verses=verses, 
+    return render_template('books/garden.html',
+        verses=verses,
         verseText=verseText,
-        verseCW=verseCW, 
+        verseCW=verseCW,
         selectedVerse=selectedVerse,
         selectedWPM=selectedWPM*1,
+        selectedWS=selectedWS,
+        ws_options=ws_options,
         book_title=book_title,
         verse_term=verse_term,
         page_title = "CW " + book_title
-        )    
+        )
 
 
 @books.route('/')

@@ -7,8 +7,8 @@
   <h2>{{book_title}}</h2>
   <div class="optionContainer">
     <form id="theForm" method="post">
-    <table style="max-width: 400px;">
-    <tr>  
+    <table style="max-width: 500px;">
+    <tr>
     <td>WPM</td>
     <td>
     <select name="wpm" id="wpm">
@@ -19,6 +19,17 @@
     </td>
     </tr>
     <tr>
+      <td>Word Spacing</td>
+      <td>
+      <select name="ws" id="ws">
+        {% for ws_option in ws_options %}
+          <option value="{{ws_option}}" {% if ws_option == selectedWS %}selected{% endif %}>{{ws_option}}{% if ws_option == "1" %} (Standard){% endif %}</option>
+        {% endfor %}
+      </select>
+      <span><span id="wordSpace"></span> ms</span>
+      </td>
+    </tr>
+    <tr>
       <td>{{verse_term}}</td>
       <td>
       <select name="verseSelect" id="verseSelect" >
@@ -26,8 +37,8 @@
         {%for verse in verses %}
         {% set selected="" %}
         {% if selectedVerse == verse.file_name %}
-          {% set selected = "selected" %}  
-        {% endif %}  
+          {% set selected = "selected" %}
+        {% endif %}
         <option value="{{verse.file_name}}" {{selected}}>{{verse.display_name}}</option>
         {% endfor %}
       </select>
@@ -56,23 +67,36 @@
     let prefix = 'VVV  '
     const player = new jscw();
     player.init();
+    const wpmEl = document.getElementById('wpm');
+    const wsEl = document.getElementById('ws');
+
+    function getEWS() {
+        return Number(wsEl.options[wsEl.selectedIndex].value) - 1;
+    }
+
+    function getWordSpace() {
+        const speed = Number(wpmEl.value);
+        const ws = Number(wsEl.value);
+        const spacing = Math.floor(8400 * ws / speed);
+        document.getElementById('wordSpace').innerText = spacing;
+        return spacing;
+    }
+
     function playCW(text){
-        wpmEl = document.getElementById('wpm')
-        speed = wpmEl.options[wpmEl.selectedIndex].value
+        const speed = wpmEl.options[wpmEl.selectedIndex].value;
         player.stop();
         player.init();
         player.setWpm(speed);
+        player.setEws(getEWS());
         player.setFreq(600);
         player.setStartDelay(1);
         player.play(prefix + text);
         prefix = ""
     }
     const select = document.getElementById('verseSelect');
-    const wpm = document.getElementById('wpm') 
     const buttonViewText = document.getElementById('viewText');
     const buttonHideText = document.getElementById('hideText');
-    const verseText = document.getElementById('textDiv').innerText;
-    var wpmvalue = 20
+    getWordSpace();
     buttonViewText.addEventListener('click', function(){
       pagevalue = select.value;
       textDiv.style.visibility = 'visible';
@@ -87,7 +111,7 @@
       if (buttonPauseCW.innerText == "PAUSE"){
         buttonPauseCW.innerText = "Continue";
       }else{
-        buttonPauseCW.innerText = "PAUSE";  
+        buttonPauseCW.innerText = "PAUSE";
       }
     })
     buttonHideText.addEventListener('click', function(){
@@ -100,20 +124,19 @@
         document.getElementById("theForm").submit()
       }
     })
-    document.getElementById('wpm').addEventListener('change', () => {
+    wpmEl.addEventListener('change', () => {
+      getWordSpace();
       playCW("{{verseCW | safe}}");
       document.getElementById('buttonPauseCW').style.visibility = 'visible';
-
-    })    
+    })
+    wsEl.addEventListener('change', getWordSpace);
     document.addEventListener('DOMContentLoaded', function() {
-        // Code to execute once the DOM is ready
         {%if selectedVerse %}
           document.getElementById('viewText').style.visibility = 'visible';
           document.getElementById('buttonPlayCW').style.visibility = 'visible';
           document.getElementById('buttonPauseCW').style.visibility = 'hidden';
-
-        {% endif %}   
-});
+        {% endif %}
+    });
 </script>
   
   {% endblock %}  

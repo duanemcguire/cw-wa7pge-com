@@ -1,6 +1,6 @@
 // CW WA7PGE — Service Worker
 // Bump CACHE_VERSION when static assets change to force a cache refresh.
-const CACHE_VERSION = 'cw-v1';
+const CACHE_VERSION = 'cw-v2';
 
 const STATIC_ASSETS = [
   '/static/js/jscwlib.js',
@@ -188,8 +188,8 @@ async function cacheFirst(request) {
     }
     return response;
   } catch {
-    return new Response('Offline — content not yet cached.', {
-      status: 503, headers: { 'Content-Type': 'text/plain' }
+    return new Response(OFFLINE_PAGE, {
+      status: 503, headers: { 'Content-Type': 'text/html' }
     });
   }
 }
@@ -205,11 +205,46 @@ async function networkFirstWithFallback(request) {
   } catch {
     const cached = await caches.match(request);
     if (cached) return cached;
-    return new Response('You are offline and this page has not been cached yet.', {
-      status: 503, headers: { 'Content-Type': 'text/plain' }
+    return new Response(OFFLINE_PAGE, {
+      status: 503, headers: { 'Content-Type': 'text/html' }
     });
   }
 }
+
+const OFFLINE_PAGE = `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Offline — CW Practice</title>
+  <style>
+    body { font-family: Arial, sans-serif; background: #1a2a3a; color: #fff;
+           display: flex; align-items: center; justify-content: center;
+           min-height: 100vh; margin: 0; text-align: center; padding: 20px; box-sizing: border-box; }
+    .card { background: rgba(255,255,255,0.1); border-radius: 12px; padding: 40px 30px; max-width: 400px; }
+    h1 { font-size: 1.6em; margin-bottom: 12px; color: #f0a500; }
+    p  { line-height: 1.6; margin-bottom: 24px; color: #ccc; }
+    button { background: #f0a500; color: #1a2a3a; border: none; border-radius: 6px;
+             padding: 12px 28px; font-size: 1em; font-weight: bold; cursor: pointer; }
+    button:hover { background: #d4911a; }
+    .status { margin-top: 20px; font-size: 0.85em; color: #aaa; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>You are offline</h1>
+    <p>This page hasn't been cached yet. Pages you've visited before are available offline.</p>
+    <button onclick="location.reload()">Try Again</button>
+    <p class="status" id="status">Waiting for connection&hellip;</p>
+  </div>
+  <script>
+    window.addEventListener('online', function() {
+      document.getElementById('status').textContent = 'Connection restored — reloading…';
+      setTimeout(function() { location.reload(); }, 500);
+    });
+  </script>
+</body>
+</html>`;
 
 async function staleWhileRevalidate(request) {
   const cache = await caches.open(CACHE_VERSION);

@@ -4,25 +4,20 @@
 
 <h2>Phrase Sending Practice</h2>
 
-<form method="GET" id='theForm'>
-    Category: <select name="category" id='category' style="max-width: 200px;">
+<form id='theForm'>
+    Category: <select id='category' style="max-width: 200px;">
         {% for category in categories %}
         <option value="{{ category }}" {% if category==selected_category %}selected{% endif %}>{{ category }}</option>
         {% endfor %}
     </select>
 
-
-    Collection: <select id="selectCollection" name="filename" style="max-width: 200px;">
-        {%if files %}
+    Collection: <select id="selectCollection" style="max-width: 200px;">
         {% for file in files %}
         <option value="{{ file }}" {% if file==selected_file %}selected{% endif %}>{{ file }}</option>
         {% endfor %}
-        {% endif %}
     </select>
-    <br>
-    <input type="hidden" name="newCategory" id="newCategory" value = "0">
-</form >
-<button id="buttonGetPhrase">Show a {{selected_category}}</button>
+</form>
+<button id="buttonGetPhrase">Show a Phrase</button>
 
 <div class="line-display">
     <strong></strong><p id="reveal_title"></p></strong>
@@ -34,41 +29,52 @@
     CW.
 </DIV>
 
-<SCRIPT>
-    let lines = {{lines | safe}};
-    let prefix = 'VVV  '
-    let line = ''
+<script>
+    let lines = [];
+    let line = '';
 
-    category = document.getElementById('category');
-    category.addEventListener('change', () => {
-        newCategory = document.getElementById('newCategory');
-        newCategory.value = 1;        
-        theForm.submit();
-    });
+    const categoryEl = document.getElementById('category');
+    const collectionEl = document.getElementById('selectCollection');
 
-    function display_title(){
-        document.getElementById("reveal_title").innerText = song_title;
-        document.getElementById("reveal_title").style.display = "block";
+    async function loadCollections(category) {
+        const resp = await fetch('/phrases/api/index');
+        const data = await resp.json();
+        const files = data.files_by_category[category] || [];
+        collectionEl.innerHTML = '';
+        for (const f of files) {
+            const opt = document.createElement('option');
+            opt.value = f;
+            opt.textContent = f;
+            collectionEl.appendChild(opt);
+        }
+        return files[0] || '';
     }
+
+    async function loadLines(category, file) {
+        const url = `/phrases/api/data?category=${encodeURIComponent(category)}&file=${encodeURIComponent(file)}`;
+        const resp = await fetch(url);
+        const data = await resp.json();
+        lines = data.lines || [];
+    }
+
     function getLine(){
-        randomIndex = Math.floor(Math.random() * lines.length);
-        line = lines[randomIndex].trim().replace("~","<BR>")
-        return line;
+        const randomIndex = Math.floor(Math.random() * lines.length);
+        return lines[randomIndex].trim().replace('~', '<BR>');
     }
-    selectCollection.addEventListener('change', () => {
-        theForm.submit();
+
+    categoryEl.addEventListener('change', async () => {
+        const firstFile = await loadCollections(categoryEl.value);
+        await loadLines(categoryEl.value, firstFile);
+    });
+    collectionEl.addEventListener('change', async () => {
+        await loadLines(categoryEl.value, collectionEl.value);
     });
     buttonGetPhrase.addEventListener('click', () => {
-        if (lines.length > 0){
-            line = getLine()
+        if (lines.length > 0) {
+            line = getLine();
             document.getElementById('reveal_title').innerHTML = line;
-        }else{
-            //Submit the form to collect the lines
-            theForm.submit();
         }
-    });  
-
-    // Hot Keys
+    });
 
     window.addEventListener("keydown", function(e) {
         if(["Space","ArrowUp","ArrowDown","ArrowLeft","ArrowRight"].indexOf(e.code) > -1) {
@@ -76,17 +82,13 @@
         }
     }, false);
     document.addEventListener('keydown', function(event) {
-        // Check for specific key
-        if (event.key === "ArrowRight" ) {
-            // Get Next Phrase
-            document.getElementById("buttonGetPhrase").click()
-        } 
-    })     
+        if (event.key === 'ArrowRight') {
+            document.getElementById('buttonGetPhrase').click();
+        }
+    });
 
-
-
-</SCRIPT>
-
-
+    // Load initial data
+    loadLines('{{ selected_category }}', '{{ selected_file }}');
+</script>
 
 {% endblock %}

@@ -1,4 +1,4 @@
-from flask import render_template, request
+from flask import render_template, request, jsonify
 import os
 import random
 from flask import Blueprint
@@ -185,9 +185,46 @@ def phrase_flow():
     return render_template('phrases/phrase-flow.html',
                            categories=attr['categories'],
                            files=attr['collections'],
-                           selected_category=attr['selected_category'], 
-                           selected_file=attr['selected_file'], 
+                           selected_category=attr['selected_category'],
+                           selected_file=attr['selected_file'],
                            lines=attr['lines'],
                            attr = attr,
                            page_title = 'CW Phrase Flow Practice')
+
+
+# ── Offline / PWA API ─────────────────────────────────────────────────────────
+
+def _text_folder():
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+    return os.path.join(current_dir, 'text_files')
+
+
+@phrases.route('/api/index')
+def api_index():
+    tf = _text_folder()
+    categories = sorted(os.listdir(tf))
+    files_by_category = {}
+    for cat in categories:
+        cat_path = os.path.join(tf, cat)
+        if os.path.isdir(cat_path):
+            files_by_category[cat] = sorted(os.listdir(cat_path))
+    return jsonify({'categories': categories, 'files_by_category': files_by_category})
+
+
+@phrases.route('/api/data')
+def api_data():
+    category = request.args.get('category', '')
+    filename = request.args.get('file', '')
+    tf = _text_folder()
+    file_path = os.path.realpath(os.path.join(tf, category, filename))
+    if not file_path.startswith(os.path.realpath(tf) + os.sep):
+        return jsonify({'error': 'Invalid path'}), 400
+    try:
+        lines = []
+        with open(file_path, 'r') as f:
+            for line in f:
+                lines.append(simplify_cw_line(line).rstrip('\n'))
+        return jsonify({'lines': lines, 'category': category, 'file': filename})
+    except FileNotFoundError:
+        return jsonify({'error': 'File not found'}), 404
 

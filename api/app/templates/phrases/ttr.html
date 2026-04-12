@@ -15,20 +15,20 @@
     <h2>Word Building/TTR</h2>
 
     <div style="float: left">
-        <form method="GET" id='theForm' >
-            Word Collection: <select id="selectCollection" name="filename" style="width: 200px;">
+        <form id='theForm' >
+            Word Collection: <select id="selectCollection" style="width: 200px;">
                 {% for file in files %}
                     <option value="{{ file }}" {% if file == selected_file %}selected{% endif %}>{{ file }}</option>
                 {% endfor %}
             </select>
 
-            WPM: 
+            WPM:
 
         <select name="wpm" id="wpm" style="width: 150px;" >
-            {% for wpm_option in attr.wpm_options %} 
+            {% for wpm_option in attr.wpm_options %}
                 <option value="{{wpm_option}}" {% if wpm_option == attr['wpm'] %}selected{% endif %}>{{wpm_option}} </option>
             {% endfor %}
-        </select>    
+        </select>
 
 
         Repetitions: <select name="repititions" id="repititions" style="width: 150px;" >
@@ -38,14 +38,11 @@
         </select>
 
         Word Spacing: <select name="ws" id="ws" style="width: 150px;" >
-             {% for ws_option in attr.ws_options %} 
+             {% for ws_option in attr.ws_options %}
                 <option value="{{ws_option}}" {% if ws_option == attr['ws'] %}selected{% endif %}>{{ws_option}} {% if ws_option == "1" %} (Standard) {% endif %}</option>
             {% endfor %}
         </select>
 <span><span id="wordSpace"></span> ms</span>
-        <BR>
-        <input type="hidden" name="newCategory" id="newCategory" value = "0">
-
         </form>
         
         <button id="buttonPlayCW"  ">Play</button>
@@ -89,7 +86,7 @@ const wsEl = document.getElementById('ws')
 let player = null;
 let running = false;
 let nextTimeout = null;
-let lines = {{ lines | safe }};
+let lines = [];
 let prefix = 'VVV  ';
 let lastLine = '';
 let repcount = 0;
@@ -197,8 +194,18 @@ repEl.addEventListener('change', () => {
 wpmEl.addEventListener('change', getWordSpace);
 wsEl.addEventListener('change', getWordSpace);
 
-selectCollection.addEventListener('change', () => {
-    theForm.submit();
+selectCollection.addEventListener('change', async () => {
+    await loadLines('Word', selectCollection.value);
 });
+
+async function loadLines(category, file) {
+    const url = `/phrases/api/data?category=${encodeURIComponent(category)}&file=${encodeURIComponent(file)}`;
+    const resp = await fetch(url);
+    const data = await resp.json();
+    lines = data.lines || [];
+}
+
+// Load initial data
+loadLines('Word', '{{ selected_file }}');
 </script>    
 {% endblock %}

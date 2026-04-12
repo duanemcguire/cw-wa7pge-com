@@ -1,0 +1,39 @@
+{
+  "name": "CW WA7PGE Morse Code Practice",
+  "short_name": "CW Practice",
+  "description": "Morse Code training and practice tools — progressing from recognition to fluency",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#1a2a3a",
+  "theme_color": "#1a2a3a",
+  "icons": [
+    {
+      "src": "/static/images/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "/static/images/favicon.ico",
+      "sizes": "48x48",
+      "type": "image/x-icon"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Phrase Copy Practice",
+      "url": "/phrases/",
+      "description": "Copy practice with random phrases"
+    },
+    {
+      "name": "Word Building / TTR",
+      "url": "/phrases/ttr",
+      "description": "Word flow and TTR exercise"
+    },
+    {
+      "name": "Callsign Trainer",
+      "url": "/callsigns/trainer",
+      "description": "Random callsign copy practice"
+    }
+  ]
+}

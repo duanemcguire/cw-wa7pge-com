@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <rect width="512" height="512" rx="80" fill="#1a2a3a"/>
+  <text x="256" y="220" font-family="Arial Black, sans-serif" font-size="160" font-weight="900"
+        fill="#f0a500" text-anchor="middle" dominant-baseline="middle">CW</text>
+  <!-- C: dash dot dash dot -->
+  <rect x="72"  y="310" width="42" height="18" rx="9" fill="#f0a500"/>
+  <circle cx="134" cy="319" r="9" fill="#f0a500"/>
+  <rect x="153"  y="310" width="42" height="18" rx="9" fill="#f0a500"/>
+  <circle cx="215" cy="319" r="9" fill="#f0a500"/>
+  <!-- W: dot dash dash -->
+  <circle cx="265" cy="319" r="9" fill="#4fc3f7"/>
+  <rect x="284"  y="310" width="42" height="18" rx="9" fill="#4fc3f7"/>
+  <rect x="346"  y="310" width="42" height="18" rx="9" fill="#4fc3f7"/>
+  <text x="256" y="400" font-family="Arial, sans-serif" font-size="52" font-weight="bold"
+        fill="#4fc3f7" text-anchor="middle">WA7PGE</text>
+</svg>

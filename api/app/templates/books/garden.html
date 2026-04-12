@@ -6,14 +6,14 @@
 
   <h2>{{book_title}}</h2>
   <div class="optionContainer">
-    <form id="theForm" method="post">
+    <form id="theForm">
     <table style="max-width: 500px;">
     <tr>
     <td>WPM</td>
     <td>
-    <select name="wpm" id="wpm">
+    <select id="wpm">
       {% for wpm in ["12","15","18","20","22","25","28","30","35","40"] %}
-        <option value="{{wpm}}" {%if wpm in selectedWPM %}selected{% endif %}>{{wpm}}</option>
+        <option value="{{wpm}}" {%if wpm == selectedWPM %}selected{% endif %}>{{wpm}}</option>
       {% endfor %}
     </select>
     </td>
@@ -21,7 +21,7 @@
     <tr>
       <td>Word Spacing</td>
       <td>
-      <select name="ws" id="ws">
+      <select id="ws">
         {% for ws_option in ws_options %}
           <option value="{{ws_option}}" {% if ws_option == selectedWS %}selected{% endif %}>{{ws_option}}{% if ws_option == "1" %} (Standard){% endif %}</option>
         {% endfor %}
@@ -32,43 +32,42 @@
     <tr>
       <td>{{verse_term}}</td>
       <td>
-      <select name="verseSelect" id="verseSelect" >
+      <select id="verseSelect">
         <option value="">Select a {{verse_term}}</option>
         {%for verse in verses %}
-        {% set selected="" %}
-        {% if selectedVerse == verse.file_name %}
-          {% set selected = "selected" %}
-        {% endif %}
-        <option value="{{verse.file_name}}" {{selected}}>{{verse.display_name}}</option>
+        <option value="{{verse.file_name}}">{{verse.display_name}}</option>
         {% endfor %}
       </select>
       </td>
     </tr>
   </table>
-  </form> 
+  </form>
   </div>
   <div>
-    <button id="buttonPlayCW" style="visibility: hidden">Play the CW</button> 
+    <button id="buttonPlayCW" style="visibility: hidden">Play the CW</button>
     <button id="buttonPauseCW" style="visibility: hidden">Pause</button>
-    <button id="viewText" style="visibility: hidden">View the Text</button> 
+    <button id="viewText" style="visibility: hidden">View the Text</button>
     <button id="hideText" style="visibility: hidden;">Hide the Text</button>
  </div>
- <BR> 
-  <div id="textDiv" style="visibility: hidden; 
-      overflow: scroll; 
-      border: 1px solid black; 
-      max-width: 600px; 
-      width:100%; height: 
+ <BR>
+  <div id="textDiv" style="visibility: hidden;
+      overflow: scroll;
+      border: 1px solid black;
+      max-width: 600px;
+      width:100%; height:
       400px; " >
-    <div style="padding: 10px; font-weight:normal; font-family:Arial, Helvetica, sans-serif">{{verseText | replace('\n', '<br>') | safe}}</DIV>
+    <div id="textContent" style="padding: 10px; font-weight:normal; font-family:Arial, Helvetica, sans-serif"></div>
   </div>
-  
+
   <script>
-    let prefix = 'VVV  '
+    const bookKey = '{{ book_key }}';
+    let currentVerseCW = '';
+    let prefix = 'VVV  ';
     const player = new jscw();
     player.init();
     const wpmEl = document.getElementById('wpm');
     const wsEl = document.getElementById('ws');
+    const verseSelect = document.getElementById('verseSelect');
 
     function getEWS() {
         return Number(wsEl.options[wsEl.selectedIndex].value) - 1;
@@ -82,7 +81,7 @@
         return spacing;
     }
 
-    function playCW(text){
+    function playCW(text) {
         const speed = wpmEl.options[wpmEl.selectedIndex].value;
         player.stop();
         player.init();
@@ -91,54 +90,57 @@
         player.setFreq(600);
         player.setStartDelay(1);
         player.play(prefix + text);
-        prefix = ""
+        prefix = '';
     }
-    const select = document.getElementById('verseSelect');
-    const buttonViewText = document.getElementById('viewText');
-    const buttonHideText = document.getElementById('hideText');
+
+    async function loadVerse(verseFile) {
+        const url = `/books/api/data?book=${encodeURIComponent(bookKey)}&verse=${encodeURIComponent(verseFile)}`;
+        const resp = await fetch(url);
+        const data = await resp.json();
+        currentVerseCW = data.cw || '';
+        document.getElementById('textContent').innerHTML =
+            (data.text || '').replace(/\n/g, '<br>');
+        document.getElementById('buttonPlayCW').style.visibility = 'visible';
+        document.getElementById('buttonPauseCW').style.visibility = 'hidden';
+        document.getElementById('viewText').style.visibility = 'visible';
+        document.getElementById('buttonPauseCW').innerText = 'Pause';
+        prefix = 'VVV  ';
+    }
+
     getWordSpace();
-    buttonViewText.addEventListener('click', function(){
-      pagevalue = select.value;
-      textDiv.style.visibility = 'visible';
-      buttonHideText.style.visibility = 'visible';
-    })
-    buttonPlayCW.addEventListener('click', function(){
-      playCW("{{verseCW | safe}}");
-      document.getElementById('buttonPauseCW').style.visibility = 'visible';
-    })
-    buttonPauseCW.addEventListener('click', function(){
-      player.pause()
-      if (buttonPauseCW.innerText == "PAUSE"){
-        buttonPauseCW.innerText = "Continue";
-      }else{
-        buttonPauseCW.innerText = "PAUSE";
-      }
-    })
-    buttonHideText.addEventListener('click', function(){
-      textDiv.style.visibility = 'hidden';
-      buttonHideText.style.visibility = 'hidden';
-    })
-    select.addEventListener('change', () => {
-      pagevalue = select.value;
-      if (pagevalue > "") {
-        document.getElementById("theForm").submit()
-      }
-    })
-    wpmEl.addEventListener('change', () => {
-      getWordSpace();
-      playCW("{{verseCW | safe}}");
-      document.getElementById('buttonPauseCW').style.visibility = 'visible';
-    })
-    wsEl.addEventListener('change', getWordSpace);
-    document.addEventListener('DOMContentLoaded', function() {
-        {%if selectedVerse %}
-          document.getElementById('viewText').style.visibility = 'visible';
-          document.getElementById('buttonPlayCW').style.visibility = 'visible';
-          document.getElementById('buttonPauseCW').style.visibility = 'hidden';
-        {% endif %}
+
+    document.getElementById('viewText').addEventListener('click', function() {
+        textDiv.style.visibility = 'visible';
+        document.getElementById('hideText').style.visibility = 'visible';
     });
+    document.getElementById('buttonPlayCW').addEventListener('click', function() {
+        playCW(currentVerseCW);
+        document.getElementById('buttonPauseCW').style.visibility = 'visible';
+    });
+    document.getElementById('buttonPauseCW').addEventListener('click', function() {
+        player.pause();
+        if (buttonPauseCW.innerText === 'PAUSE') {
+            buttonPauseCW.innerText = 'Continue';
+        } else {
+            buttonPauseCW.innerText = 'PAUSE';
+        }
+    });
+    document.getElementById('hideText').addEventListener('click', function() {
+        textDiv.style.visibility = 'hidden';
+        document.getElementById('hideText').style.visibility = 'hidden';
+    });
+    verseSelect.addEventListener('change', async () => {
+        const verseFile = verseSelect.value;
+        if (verseFile) {
+            await loadVerse(verseFile);
+        }
+    });
+    wpmEl.addEventListener('change', () => {
+        getWordSpace();
+        if (currentVerseCW) { playCW(currentVerseCW); }
+        document.getElementById('buttonPauseCW').style.visibility = 'visible';
+    });
+    wsEl.addEventListener('change', getWordSpace);
 </script>
-  
-  {% endblock %}  
-  
-  
+
+  {% endblock %}

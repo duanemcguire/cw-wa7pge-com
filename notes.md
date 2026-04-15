@@ -80,3 +80,30 @@ find .   -type d \( -name "Word" \) -prune   -o -type f -exec wc -l {} +
     99 ./Binomial Phrase/Level II
   7714 total
 ```cd 
+
+Google Analytics: 
+What was implemented
+Template	Event	Parameters
+copying.html	cw_session_start on first phrase	tool, wpm, category, collection
+sending.html	cw_session_start on first phrase	tool, category, collection
+ttr.html	cw_session_start on Play	tool, wpm, collection
+ttr.html	cw_session_stop on Stop	tool, wpm, collection, duration_seconds
+phrase-flow.html	cw_session_start on Play	tool, wpm, category, collection
+phrase-flow.html	cw_session_stop on Stop	tool, wpm, category, collection, duration_seconds
+callsign-trainer.html	cw_session_start on Start	tool, wpm
+callsign-trainer.html	cw_session_stop on Stop	tool, wpm, duration_seconds
+garden.html	cw_session_start on Play	tool, book, verse, wpm
+In GA4 you'll find these under Events → cw_session_start / cw_session_stop. You can then use tool as a dimension to break down which tools are used, and wpm as a metric/dimension to see what speeds people practice at. The duration_seconds on stop events lets you build engagement time charts for the flow-style tools.
+
+are these events collected when the user is offline?
+No. When the user is offline, GA events are silently dropped.
+
+Here's why: the service worker in sw.js:166 only handles same-origin requests. GA hits go to google-analytics.com (cross-origin), so the SW passes them straight to the network — and when there's no network, they fail and disappear with no retry.
+
+For a practice tool where offline use is a feature, this means any session that happens fully offline produces no GA data at all.
+
+The fix would be Background Sync: intercept failed GA requests in the service worker, store them in IndexedDB, and replay them when connectivity returns. It's non-trivial to implement correctly, and GA4 may also reject hits that arrive with a significant timestamp delay.
+
+For a CW practice app, the data loss is probably acceptable — you'll still get good signal from online sessions, and the usage patterns (which tools, which WPM) are unlikely to differ systematically between online and offline users. I'd hold off on implementing Background Sync unless you find the offline population is large enough to skew your data.
+
+The events should start showing up in GA4 within a day or two under Explore → Free Form with event_name as a dimension.

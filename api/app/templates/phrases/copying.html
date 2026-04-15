@@ -60,6 +60,7 @@
     let lines = [];
     let prefix = 'VVV  ';
     let line = '';
+    let _cwSessionStarted = false;
     const player = new jscw();
     player.init();
 
@@ -105,6 +106,15 @@
         return l;
     }
     function getNext(){
+        if (!_cwSessionStarted) {
+            _cwSessionStarted = true;
+            gtag('event', 'cw_session_start', {
+                tool: 'phrase_copy',
+                wpm: Number(document.getElementById('wpm').value),
+                category: categoryEl.value,
+                collection: collectionEl.value
+            });
+        }
         if (lines.length > 0){
             line = getLine();
             play_cw(line);

@@ -116,6 +116,12 @@
     document.getElementById('buttonPlayCW').addEventListener('click', function() {
         playCW(currentVerseCW);
         document.getElementById('buttonPauseCW').style.visibility = 'visible';
+        gtag('event', 'cw_session_start', {
+            tool: 'books',
+            book: bookKey,
+            verse: verseSelect.value,
+            wpm: Number(wpmEl.value)
+        });
     });
     document.getElementById('buttonPauseCW').addEventListener('click', function() {
         player.pause();

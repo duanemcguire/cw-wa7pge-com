@@ -91,6 +91,7 @@ let prefix = 'VVV  ';
 let lastLine = '';
 let repcount = 0;
 let repititions = {{ attr['repititions'] }};
+let _cwSessionStart = null;
 document.getElementById('wordSpace').innerText = getWordSpace();
 
 /* ===============================
@@ -115,12 +116,27 @@ function startCW() {
 
     running = true;
     prefix = 'VVV  ';
+    _cwSessionStart = Date.now();
+    gtag('event', 'cw_session_start', {
+        tool: 'ttr',
+        wpm: Number(wpmEl.value),
+        collection: selectCollection.value
+    });
     initPlayer();
     playNext();
 }
 
 function stopCW() {
     running = false;
+    if (_cwSessionStart !== null) {
+        gtag('event', 'cw_session_stop', {
+            tool: 'ttr',
+            wpm: Number(wpmEl.value),
+            collection: selectCollection.value,
+            duration_seconds: Math.round((Date.now() - _cwSessionStart) / 1000)
+        });
+        _cwSessionStart = null;
+    }
     if (player) {
         player.stop();
 

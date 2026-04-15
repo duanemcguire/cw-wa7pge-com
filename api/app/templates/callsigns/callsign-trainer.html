@@ -24,8 +24,8 @@
   </style>
   <h2>Callsign Trainer</h2>
   <div class="button-container">
-    <button onclick="startPlayback()">Start Playing</button>
-    <button class="stop-button" onclick="stopPlayback()">Stop</button>
+    <button onclick="cwStart()">Start Playing</button>
+    <button class="stop-button" onclick="cwStop()">Stop</button>
   </div>
   <div class="callsign" id="callsignDisplay">&nbsp;</div>
   <div class="optionContainer">
@@ -92,4 +92,28 @@
     
     
   </Div>
+  <script>
+    let _cwSessionStart = null;
+    function cwStart() {
+        startPlayback();
+        if (_cwSessionStart === null) {
+            _cwSessionStart = Date.now();
+            gtag('event', 'cw_session_start', {
+                tool: 'callsigns',
+                wpm: Number(document.getElementById('wpm').value)
+            });
+        }
+    }
+    function cwStop() {
+        stopPlayback();
+        if (_cwSessionStart !== null) {
+            gtag('event', 'cw_session_stop', {
+                tool: 'callsigns',
+                wpm: Number(document.getElementById('wpm').value),
+                duration_seconds: Math.round((Date.now() - _cwSessionStart) / 1000)
+            });
+            _cwSessionStart = null;
+        }
+    }
+  </script>
 {% endblock %}  

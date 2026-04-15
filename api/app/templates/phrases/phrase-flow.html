@@ -100,6 +100,7 @@ let prefix = 'VVV  ';
 let lastline = '';
 let repcount = 0;
 let repititions = {{ attr['repititions'] }};
+let _cwSessionStart = null;
 document.getElementById('wordSpace').innerText = getWordSpace();
 
 /* ===============================
@@ -124,14 +125,29 @@ function startCW() {
 
     running = true;
     prefix = 'VVV  ';
+    _cwSessionStart = Date.now();
+    gtag('event', 'cw_session_start', {
+        tool: 'phrase_flow',
+        wpm: Number(wpmEl.value),
+        category: category.value,
+        collection: selectCollection.value
+    });
     initPlayer();
     playNext();
 }
 
 function stopCW() {
     running = false;
-
-
+    if (_cwSessionStart !== null) {
+        gtag('event', 'cw_session_stop', {
+            tool: 'phrase_flow',
+            wpm: Number(wpmEl.value),
+            category: category.value,
+            collection: selectCollection.value,
+            duration_seconds: Math.round((Date.now() - _cwSessionStart) / 1000)
+        });
+        _cwSessionStart = null;
+    }
     if (player) {
         player.stop();
 

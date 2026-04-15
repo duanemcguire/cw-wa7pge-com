@@ -32,6 +32,7 @@
 <script>
     let lines = [];
     let line = '';
+    let _cwSessionStarted = false;
 
     const categoryEl = document.getElementById('category');
     const collectionEl = document.getElementById('selectCollection');
@@ -71,6 +72,14 @@
     });
     buttonGetPhrase.addEventListener('click', () => {
         if (lines.length > 0) {
+            if (!_cwSessionStarted) {
+                _cwSessionStarted = true;
+                gtag('event', 'cw_session_start', {
+                    tool: 'phrase_sending',
+                    category: categoryEl.value,
+                    collection: collectionEl.value
+                });
+            }
             line = getLine();
             document.getElementById('reveal_title').innerHTML = line;
         }

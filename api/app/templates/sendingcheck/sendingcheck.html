@@ -32,24 +32,32 @@
     align-items: center;
   }
 
-  #sourceText {
+  .sc-select {
     width: 100%;
-    height: 130px;
-    background: #f9fafb;
+    background: #ffffff;
     border: 1px solid rgba(210, 215, 217, 0.75);
     border-radius: 0.375em;
     color: #3d4449;
     font-family: "Open Sans", sans-serif;
     font-size: 0.85em;
-    padding: 0.5em 0.75em;
-    resize: vertical;
-    line-height: 1.65;
-    transition: border-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+    padding: 0.35em 0.6em;
+    margin-bottom: 0.5em;
+    cursor: pointer;
+    transition: border-color 0.2s ease-in-out;
   }
-  #sourceText:focus {
+  .sc-select:focus {
     outline: none;
     border-color: #f56a6a;
-    box-shadow: 0 0 0 2px rgba(245, 106, 106, 0.15);
+  }
+
+  .sc-select-label {
+    font-family: "Roboto Slab", serif;
+    font-size: 0.65em;
+    color: #7f888f;
+    text-transform: uppercase;
+    letter-spacing: 0.075em;
+    display: block;
+    margin-bottom: 3px;
   }
 
   .sc-load-btn {
@@ -262,15 +270,16 @@
 
 <div class="sc-panels">
   <div class="sc-panel">
-    <div class="sc-panel-title">
-      Source Text
-      <button class="sc-load-btn" onclick="loadText()">Load ↑</button>
-    </div>
-    <textarea id="sourceText">can you help</textarea>
+    <div class="sc-panel-title">Phrase</div>
+    <label class="sc-select-label">Category</label>
+    <select id="category" class="sc-select"></select>
+    <label class="sc-select-label">Collection</label>
+    <select id="selectCollection" class="sc-select"></select>
+    <button class="sc-load-btn" onclick="loadPhrase()">Load a Phrase</button>
   </div>
 
   <div class="sc-panel sc-display-panel">
-    <div class="sc-line-counter" id="lineCounter">Line 1/1</div>
+    <div class="sc-line-counter" id="lineCounter" style="display:none;"></div>
     <div id="currentLine"></div>
   </div>
 </div>
@@ -308,9 +317,7 @@
 </div>
 
 <div class="sc-controls">
-  <button class="sc-btn" onclick="prevLine()" title="Previous line">&#8249;</button>
   <button class="sc-btn" id="startBtn" onclick="startStop()">⟳ Start Listening</button>
-  <button class="sc-btn" onclick="nextLine()" title="Next line">&#8250;</button>
   <button class="sc-btn sc-btn-play" id="playRefBtn"  onclick="playReference()" title="Play perfect reference CW">▶ Reference</button>
   <button class="sc-btn sc-btn-play" id="playUserBtn" onclick="playUser()"      title="Play back your recorded sending">▶ Your sending</button>
 </div>

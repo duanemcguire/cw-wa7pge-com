@@ -1,6 +1,7 @@
 const audio = new AudioManager();
 let viz = null;
-let lines = [];
+let lines = [];       // single-element array: the current phrase
+let allLines = [];    // all lines from the loaded collection
 let lineIdx = 0;
 let refIntervals = [];
 let userIntervals = [];
@@ -13,15 +14,38 @@ function wpm()          { return parseFloat(document.getElementById('wpm').value
 function wordSpacing()  { return parseFloat(document.getElementById('wordSpacing').value); }
 function sensitivity()  { return parseFloat(document.getElementById('sensitivity').value); }
 
-// --- Text / line management ---
-function splitLines(text) {
-  return text.split('\n').map(l => l.trim()).filter(Boolean);
+// --- Phrase loading ---
+async function loadCollections(category) {
+  const resp = await fetch('/phrases/api/index');
+  const data = await resp.json();
+  const files = data.files_by_category[category] || [];
+  const collectionEl = document.getElementById('selectCollection');
+  collectionEl.innerHTML = '';
+  for (const f of files) {
+    const opt = document.createElement('option');
+    opt.value = f;
+    opt.textContent = f;
+    collectionEl.appendChild(opt);
+  }
+  allLines = [];
+  return files[0] || '';
 }
 
-function loadText() {
-  lines = splitLines(document.getElementById('sourceText').value);
-  if (!lines.length) lines = [''];
-  lineIdx = Math.min(lineIdx, lines.length - 1);
+async function fetchLines() {
+  const category = document.getElementById('category').value;
+  const file = document.getElementById('selectCollection').value;
+  if (!category || !file) return;
+  const url = `/phrases/api/data?category=${encodeURIComponent(category)}&file=${encodeURIComponent(file)}`;
+  const resp = await fetch(url);
+  const data = await resp.json();
+  allLines = data.lines || [];
+}
+
+async function loadPhrase() {
+  if (!allLines.length) await fetchLines();
+  if (!allLines.length) return;
+  lines = [allLines[Math.floor(Math.random() * allLines.length)]];
+  lineIdx = 0;
   newLine();
 }
 
@@ -36,20 +60,10 @@ function newLine() {
 function buildReference() {
   const line = lines[lineIdx] || '';
   document.getElementById('currentLine').textContent = line;
-  document.getElementById('lineCounter').textContent =
-    `Line ${lineIdx + 1}/${lines.length}`;
 
   const { intervals } = textToTiming(line, wpm(), wordSpacing());
   refIntervals = intervals;
   viz.update(refIntervals, userIntervals);
-}
-
-function prevLine() {
-  if (lineIdx > 0) { lineIdx--; newLine(); }
-}
-
-function nextLine() {
-  if (lineIdx < lines.length - 1) { lineIdx++; newLine(); }
 }
 
 // Shift intervals so the first one starts at t=0, matching the reference origin.
@@ -215,7 +229,7 @@ function initScaleBar(bar) {
 }
 
 // --- Init ---
-window.addEventListener('load', () => {
+window.addEventListener('load', async () => {
   const canvas = document.getElementById('vizCanvas');
   viz = new Visualizer(canvas);
 
@@ -236,6 +250,31 @@ window.addEventListener('load', () => {
     document.getElementById('pitchVal').textContent = pitch() + ' Hz';
   });
 
-  // Load default text
-  loadText();
+  // Populate category dropdown
+  const categoryEl = document.getElementById('category');
+  const collectionEl = document.getElementById('selectCollection');
+
+  const resp = await fetch('/phrases/api/index');
+  const data = await resp.json();
+  const defaultCategory = 'Common Phrase';
+  for (const cat of data.categories) {
+    const opt = document.createElement('option');
+    opt.value = cat;
+    opt.textContent = cat;
+    if (cat === defaultCategory) opt.selected = true;
+    categoryEl.appendChild(opt);
+  }
+
+  categoryEl.addEventListener('change', async () => {
+    await loadCollections(categoryEl.value);
+    await loadPhrase();
+  });
+
+  collectionEl.addEventListener('change', async () => {
+    allLines = [];
+    await loadPhrase();
+  });
+
+  await loadCollections(categoryEl.value);
+  await loadPhrase();
 });

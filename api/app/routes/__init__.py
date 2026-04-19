@@ -4,6 +4,7 @@ from .callsigns.callsigns_controller import callsigns
 from .books.books_controller import  books
 from .main.main_controller import main
 from .utility.utility_controller import utility
+from .sendingcheck.sendingcheck_controller import sendingcheck
 from flask import redirect
 import logging
 
@@ -17,6 +18,7 @@ def setup_routes(app):
     app.register_blueprint(callsigns, url_prefix="/callsigns")
     app.register_blueprint(phrases, url_prefix="/phrases")
     app.register_blueprint(utility, url_prefix="/utility")
+    app.register_blueprint(sendingcheck, url_prefix="/sendingcheck")
     
 
 

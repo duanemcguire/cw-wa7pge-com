@@ -104,7 +104,7 @@
         const wpmEl = document.getElementById('wpm');
         const speed = wpmEl.options[wpmEl.selectedIndex].value;
         player.setWpm(speed);
-        player.setEws(getEWS());
+        player.ews = getEWS();
         player.setFreq(600);
         player.setStartDelay(1);
         player.play(prefix + text);

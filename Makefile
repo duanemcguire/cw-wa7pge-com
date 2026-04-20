@@ -108,9 +108,10 @@ local-check-deps:
 
 .PHONY: local-install # Creates a virtual environment and install all dependencies
 local-install: local-check-deps
-	python3.11 -m venv ${VIRTUALENV_DIR}
-	${VIRTUALENV_DIR}/bin/python -m pip install --upgrade pip
-	${VIRTUALENV_DIR}/bin/pip install -r api/requirements/requirements.txt -r api/requirements/dev.requirements.txt
+	uv venv --python 3.11 --clear ${VIRTUALENV_DIR}
+	uv pip install --python ${VIRTUALENV_DIR}/bin/python psycopg2-binary \
+		$(shell grep -v '^psycopg2' api/requirements/requirements.txt | tr '\n' ' ') \
+		$(shell grep -v '^psycopg2' api/requirements/dev.requirements.txt | tr '\n' ' ')
 
 .PHONY: local-dev
 local-dev:

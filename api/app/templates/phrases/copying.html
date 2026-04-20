@@ -15,12 +15,22 @@
 
 
     <form id='theForm'>
-        WPM:
-        <select name="wpm" id="wpm" style="width: 95px;" >
-            {% for wpmo in wpm_options %}
-                <option value="{{ wpmo }}" {% if wpmo|int  == wpm|int  %}selected{% endif %}>{{ wpmo }}</option>
-            {% endfor %}
-        </select>
+        <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap; margin-bottom:4px;">
+            <span>WPM:
+            <select name="wpm" id="wpm" style="width: 95px;">
+                {% for wpmo in wpm_options %}
+                    <option value="{{ wpmo }}" {% if wpmo|int == wpm|int %}selected{% endif %}>{{ wpmo }}</option>
+                {% endfor %}
+            </select>
+            <span style="display:block; visibility:hidden;">0 ms</span></span>
+            <span>Word Spacing:
+            <select name="ws" id="ws" style="width: 150px;">
+                {% for ws_option in ws_options %}
+                    <option value="{{ ws_option }}" {% if ws_option == ws %}selected{% endif %}>{{ ws_option }}{% if ws_option == "1" %} (Standard){% endif %}</option>
+                {% endfor %}
+            </select>
+            <span><span id="wordSpace"></span> ms</span></span>
+        </div>
 
         Category: <select id='category' style="max-width: 200px;">
             {% for category in categories %}
@@ -94,10 +104,24 @@
         const wpmEl = document.getElementById('wpm');
         const speed = wpmEl.options[wpmEl.selectedIndex].value;
         player.setWpm(speed);
+        player.setEws(getEWS());
         player.setFreq(600);
         player.setStartDelay(1);
         player.play(prefix + text);
         prefix = '';
+    }
+    function getEWS(){
+        const wsEl = document.getElementById('ws');
+        return wsEl.options[wsEl.selectedIndex].value - 1;
+    }
+    function getWordSpace() {
+        const wpmEl = document.getElementById('wpm');
+        const wsEl = document.getElementById('ws');
+        const speed = Number(wpmEl.value);
+        const ws = Number(wsEl.value);
+        const spacing = Math.floor(8400 * ws / speed);
+        document.getElementById('wordSpace').innerText = spacing;
+        return spacing;
     }
     function getLine(){
         const randomIndex = Math.floor(Math.random() * lines.length);
@@ -125,6 +149,9 @@
             document.getElementById('reveal_title').style.display = 'none';
         }
     }
+
+    document.getElementById('ws').addEventListener('change', getWordSpace);
+    document.getElementById('wpm').addEventListener('change', getWordSpace);
 
     categoryEl.addEventListener('change', async () => {
         const firstFile = await loadCollections(categoryEl.value);
@@ -165,5 +192,6 @@
 
     // Load initial data
     loadLines('{{ selected_category }}', '{{ selected_file }}');
+    getWordSpace();
 </script>
 {% endblock %}

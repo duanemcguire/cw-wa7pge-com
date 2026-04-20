@@ -133,12 +133,14 @@ def songtitles():
         pass
 
     return render_template('phrases/copying.html',
-                           wpm_options=wpm_options, 
-                           wpm=wpm, 
+                           wpm_options=wpm_options,
+                           wpm=wpm,
+                           ws=attr['ws'],
+                           ws_options=attr['ws_options'],
                            categories=attr['categories'],
                            files=attr['collections'],
-                           selected_category=attr['selected_category'], 
-                           selected_file=attr['selected_file'], 
+                           selected_category=attr['selected_category'],
+                           selected_file=attr['selected_file'],
                            lines=attr['lines'],
                            page_title = 'CW Phrase Copy Practice')
 

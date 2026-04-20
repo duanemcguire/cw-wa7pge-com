@@ -15,9 +15,8 @@ function wordSpacing()  { return parseFloat(document.getElementById('wordSpacing
 function sensitivity()  { return parseFloat(document.getElementById('sensitivity').value); }
 
 // --- Phrase loading ---
-async function loadCollections(category) {
-  const resp = await fetch('/phrases/api/index');
-  const data = await resp.json();
+async function loadCollections(category, indexData) {
+  const data = indexData || await fetch('/phrases/api/index').then(r => r.json());
   const files = data.files_by_category[category] || [];
   const collectionEl = document.getElementById('selectCollection');
   collectionEl.innerHTML = '';
@@ -250,18 +249,21 @@ window.addEventListener('load', async () => {
     document.getElementById('pitchVal').textContent = pitch() + ' Hz';
   });
 
-  // Populate category dropdown
+  // Populate category and collection dropdowns from a single fetch
   const categoryEl = document.getElementById('category');
   const collectionEl = document.getElementById('selectCollection');
 
-  const resp = await fetch('/phrases/api/index');
-  const data = await resp.json();
+  const indexData = await fetch('/phrases/api/index').then(r => r.json());
   const defaultCategory = 'Common Phrase';
-  for (const cat of data.categories) {
+  let initialCategory = indexData.categories.includes(defaultCategory)
+    ? defaultCategory
+    : indexData.categories[0] || '';
+
+  for (const cat of indexData.categories) {
     const opt = document.createElement('option');
     opt.value = cat;
     opt.textContent = cat;
-    if (cat === defaultCategory) opt.selected = true;
+    if (cat === initialCategory) opt.selected = true;
     categoryEl.appendChild(opt);
   }
 
@@ -275,6 +277,6 @@ window.addEventListener('load', async () => {
     await loadPhrase();
   });
 
-  await loadCollections(categoryEl.value);
+  await loadCollections(initialCategory, indexData);
   await loadPhrase();
 });

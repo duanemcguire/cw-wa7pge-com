@@ -223,5 +223,13 @@ async function loadLines(category, file) {
 
 // Load initial data
 loadLines('Word', '{{ selected_file }}');
+
+// Persist selections
+FormState.restore('wpm');
+FormState.restore('ws');
+if (FormState.restore('repititions')) repititions = Number(repEl.value);
+getWordSpace();
+if (FormState.restore('selectCollection')) loadLines('Word', selectCollection.value);
+FormState.autoSave(['wpm', 'ws', 'repititions', 'selectCollection']);
 </script>    
 {% endblock %}

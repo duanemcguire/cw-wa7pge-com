@@ -100,6 +100,16 @@
       }
     })
 
+    // Persist selections
+    FormState.restore('wpm');
+    if (FormState.restore('wpage') && select.value) {
+        pagevalue = select.value;
+        audio.src = mp3Prefix + wpm.value + 'wpm-page-' + pagevalue + '.mp3';
+        audio.style.visibility = 'visible';
+        buttonViewText.style.visibility = 'visible';
+    }
+    FormState.autoSave(['wpm', 'wpage']);
+
 </script>
   
   {% endblock %}  

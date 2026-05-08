@@ -115,5 +115,9 @@
             _cwSessionStart = null;
         }
     }
+    FormState.restore('wpm');
+    FormState.restore('pspace');
+    FormState.restore('callspace');
+    FormState.autoSave(['wpm', 'pspace', 'callspace']);
   </script>
 {% endblock %}  

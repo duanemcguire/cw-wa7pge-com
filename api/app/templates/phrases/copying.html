@@ -193,5 +193,25 @@
     // Load initial data
     loadLines('{{ selected_category }}', '{{ selected_file }}');
     getWordSpace();
+
+    // Persist selections
+    FormState.restore('wpm');
+    FormState.restore('ws');
+    getWordSpace();
+    FormState.autoSave(['wpm', 'ws', 'category', 'selectCollection']);
+    (async function() {
+        const savedCat = FormState.get('category');
+        const savedCol = FormState.get('selectCollection');
+        if (savedCat && [...categoryEl.options].some(o => o.value === savedCat)) {
+            if (categoryEl.value !== savedCat) {
+                categoryEl.value = savedCat;
+                await loadCollections(savedCat);
+            }
+            if (savedCol && [...collectionEl.options].some(o => o.value === savedCol)) {
+                collectionEl.value = savedCol;
+            }
+            loadLines(categoryEl.value, collectionEl.value);
+        }
+    })();
 </script>
 {% endblock %}

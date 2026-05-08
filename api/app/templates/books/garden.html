@@ -147,6 +147,17 @@
         document.getElementById('buttonPauseCW').style.visibility = 'visible';
     });
     wsEl.addEventListener('change', getWordSpace);
+
+    // Persist selections
+    FormState.restore('wpm');
+    FormState.restore('ws');
+    getWordSpace();
+    FormState.autoSave(['wpm', 'ws', 'verseSelect']);
+    const _savedVerse = FormState.get('verseSelect');
+    if (_savedVerse && [...verseSelect.options].some(o => o.value === _savedVerse)) {
+        verseSelect.value = _savedVerse;
+        loadVerse(_savedVerse);
+    }
 </script>
 
   {% endblock %}

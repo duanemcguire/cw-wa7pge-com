@@ -108,7 +108,7 @@ local-check-deps:
 
 .PHONY: local-install # Creates a virtual environment and install all dependencies
 local-install: local-check-deps
-	python3.11 -m venv ${VIRTUALENV_DIR}
+	uv venv --python 3.11 --seed ${VIRTUALENV_DIR}
 	${VIRTUALENV_DIR}/bin/python -m pip install --upgrade pip
 	${VIRTUALENV_DIR}/bin/pip install -r api/requirements/requirements.txt -r api/requirements/dev.requirements.txt
 

@@ -158,6 +158,7 @@ function playNext() {
 
     const speed = Number(wpmEl.value);
     player.setWpm(speed);
+    player.setEws(getEWS());
 
     const word = getLine();
     player.play(prefix + " " + word + " ");
@@ -177,6 +178,10 @@ function getWordSpace() {
 
     document.getElementById('wordSpace').innerText = spacing;
     return spacing;
+}
+
+function getEWS() {
+    return wsEl.options[wsEl.selectedIndex].value - 1;
 }
 
 function getLine() {

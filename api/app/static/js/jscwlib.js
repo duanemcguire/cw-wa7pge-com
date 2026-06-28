@@ -614,62 +614,6 @@
         this.prosign = false;   // we're within a prosign (no letter spaces)
         this.timers = [];
         this.vibration = false;
-        this._wakeLock = null;
-        this._iosMediaEl = null; // HTMLAudioElement fed by MediaStream for iOS background audio
-
-        // --- Screen Wake Lock (Android Chrome / iOS 16.4+) ---
-        const _acquireWakeLock = async () => {
-            if (!('wakeLock' in navigator)) return;
-            try {
-                this._wakeLock = await navigator.wakeLock.request('screen');
-                this._wakeLock.addEventListener('release', () => { this._wakeLock = null; });
-            } catch (_) {}
-        };
-        const _releaseWakeLock = () => {
-            if (this._wakeLock) { this._wakeLock.release(); this._wakeLock = null; }
-        };
-
-        // --- Media Session helpers ---
-        // iOS freezes AudioContext on screen lock unless the audio is playing through
-        // an HTMLAudioElement that iOS's own media layer recognises as a live session.
-        // _iosMediaEl is wired to the AudioContext output via createMediaStreamDestination
-        // inside init(); starting it here opens that media session.
-        const _activateMediaSession = () => {
-            if (this._iosMediaEl && this._iosMediaEl.paused) {
-                this._iosMediaEl.play().catch(() => {});
-            }
-            if ('mediaSession' in navigator) {
-                navigator.mediaSession.metadata = new MediaMetadata({
-                    title: 'CW Practice',
-                    artist: 'WA7PGE CW Trainer',
-                });
-                navigator.mediaSession.playbackState = 'playing';
-                navigator.mediaSession.setActionHandler('pause', () => { if (!this.paused) this.pause(); });
-                navigator.mediaSession.setActionHandler('play',  () => { if (this.paused)  this.pause(); });
-                navigator.mediaSession.setActionHandler('stop',  () => { this.stop(); });
-            }
-        };
-        const _deactivateMediaSession = () => {
-            if (this._iosMediaEl && !this._iosMediaEl.paused) {
-                this._iosMediaEl.pause();
-            }
-            if ('mediaSession' in navigator) {
-                navigator.mediaSession.playbackState = 'none';
-            }
-        };
-
-        // Re-acquire wake lock and re-open media session when page returns to foreground.
-        document.addEventListener('visibilitychange', () => {
-            if (document.visibilityState === 'visible' && !this.paused) {
-                _acquireWakeLock();
-                _activateMediaSession();
-            }
-        });
-
-        this._acquireWakeLock = _acquireWakeLock;
-        this._releaseWakeLock = _releaseWakeLock;
-        this._activateMediaSession = _activateMediaSession;
-        this._deactivateMediaSession = _deactivateMediaSession;
 
         this.help_url = "https://fkurz.net/ham/jscwlib.html";   // Shows up in the settings dialog - to disable, change to null
         this.help_text = "jscwlib - Documentation";
@@ -790,13 +734,7 @@
                 this.gainNodeLimiter.connect(this.biquadFilter);
                 this.biquadFilter.connect(this.gainNodePlay);
                 this.gainNodePlay.connect(this.analyser);
-                // Route output through an HTMLAudioElement so iOS's media layer
-                // owns the session and keeps it alive through screen lock.
-                const _streamDest = this.audioCtx.createMediaStreamDestination();
-                this.analyser.connect(_streamDest);
-                this.analyser.disconnect(this.audioCtx.destination);
-                this._iosMediaEl = new Audio();
-                this._iosMediaEl.srcObject = _streamDest.stream;
+                this.analyser.connect(this.audioCtx.destination);
 
                 this.gainNode.gain.value = 0;
                 this.gainNodePlay.gain.value = this.playvolume;
@@ -1172,8 +1110,6 @@
 
 
             this.paused = false;
-            this._acquireWakeLock();
-            this._activateMediaSession();
 
             var text = playtext ? playtext : this.text;
             this.text = text;
@@ -1330,17 +1266,11 @@
         this.pause = function () {
             if (this.audioCtx.state === "running") {
                 this.paused = true;
-                this._releaseWakeLock();
-                // Keep _iosMediaEl running (it will output silence from suspended context)
-                // so iOS holds the media session open while paused.
-                if ('mediaSession' in navigator) navigator.mediaSession.playbackState = 'paused';
                 this.audioCtx.suspend();
                 this.resetTimers();
             }
             else {
                 this.paused = false;
-                this._acquireWakeLock();
-                if ('mediaSession' in navigator) navigator.mediaSession.playbackState = 'playing';
                 this.audioCtx.resume();
                 this.setTimers();
             }
@@ -1353,8 +1283,6 @@
         }
 
         this.stop = function() {
-            this._releaseWakeLock();
-            this._deactivateMediaSession();
             if (this.mode == 'audio') {
                 this.gainNode.gain.cancelScheduledValues(this.audioCtx.currentTime);
                 this.gainNode.gain.setValueAtTime(0, this.audioCtx.currentTime);

@@ -615,7 +615,9 @@
         this.timers = [];
         this.vibration = false;
         this._wakeLock = null;
+        this._silentAudio = null;
 
+        // --- Screen Wake Lock (Android Chrome / iOS 16.4+) ---
         const _acquireWakeLock = async () => {
             if (!('wakeLock' in navigator)) return;
             try {
@@ -626,14 +628,66 @@
         const _releaseWakeLock = () => {
             if (this._wakeLock) { this._wakeLock.release(); this._wakeLock = null; }
         };
-        // Re-acquire when page becomes visible again (required by the API after hide).
+
+        // --- Silent audio loop + Media Session (iOS background audio) ---
+        // iOS suspends AudioContext when the screen locks unless there is an
+        // active HTMLAudioElement media session. Playing a near-silent looping
+        // audio element keeps that session alive so the oscillator continues.
+        const _buildSilentAudio = () => {
+            if (this._silentAudio) return;
+            const rate = 8000, n = rate; // 1 second, 8-bit mono
+            const buf = new ArrayBuffer(44 + n);
+            const v = new DataView(buf);
+            const ws = (o, s) => { for (let i = 0; i < s.length; i++) v.setUint8(o + i, s.charCodeAt(i)); };
+            ws(0, 'RIFF'); v.setUint32(4, 36 + n, true);
+            ws(8, 'WAVE'); ws(12, 'fmt ');
+            v.setUint32(16, 16, true); v.setUint16(20, 1, true); v.setUint16(22, 1, true);
+            v.setUint32(24, rate, true); v.setUint32(28, rate, true);
+            v.setUint16(32, 1, true); v.setUint16(34, 8, true);
+            ws(36, 'data'); v.setUint32(40, n, true);
+            new Uint8Array(buf, 44).fill(128); // 128 = silence for unsigned 8-bit PCM
+            const url = URL.createObjectURL(new Blob([buf], { type: 'audio/wav' }));
+            this._silentAudio = new Audio(url);
+            this._silentAudio.loop = true;
+            this._silentAudio.volume = 0.001; // inaudible but non-zero so iOS keeps session
+        };
+        const _startSilentAudio = () => {
+            _buildSilentAudio();
+            if (this._silentAudio.paused) {
+                this._silentAudio.play().catch(() => {});
+            }
+            if ('mediaSession' in navigator) {
+                navigator.mediaSession.metadata = new MediaMetadata({
+                    title: 'CW Practice',
+                    artist: 'WA7PGE CW Trainer',
+                });
+                navigator.mediaSession.playbackState = 'playing';
+                navigator.mediaSession.setActionHandler('pause', () => { if (!this.paused) this.pause(); });
+                navigator.mediaSession.setActionHandler('play',  () => { if (this.paused)  this.pause(); });
+                navigator.mediaSession.setActionHandler('stop',  () => { this.stop(); });
+            }
+        };
+        const _stopSilentAudio = (fullyStop) => {
+            if (this._silentAudio && !this._silentAudio.paused) {
+                this._silentAudio.pause();
+            }
+            if ('mediaSession' in navigator) {
+                navigator.mediaSession.playbackState = fullyStop ? 'none' : 'paused';
+            }
+        };
+
+        // Re-acquire wake lock when page becomes visible (browser drops it on hide).
         document.addEventListener('visibilitychange', () => {
             if (document.visibilityState === 'visible' && !this.paused) {
                 _acquireWakeLock();
+                _startSilentAudio();
             }
         });
+
         this._acquireWakeLock = _acquireWakeLock;
         this._releaseWakeLock = _releaseWakeLock;
+        this._startSilentAudio = _startSilentAudio;
+        this._stopSilentAudio = _stopSilentAudio;
 
         this.help_url = "https://fkurz.net/ham/jscwlib.html";   // Shows up in the settings dialog - to disable, change to null
         this.help_text = "jscwlib - Documentation";
@@ -1131,6 +1185,7 @@
 
             this.paused = false;
             this._acquireWakeLock();
+            this._startSilentAudio();
 
             var text = playtext ? playtext : this.text;
             this.text = text;
@@ -1288,12 +1343,14 @@
             if (this.audioCtx.state === "running") {
                 this.paused = true;
                 this._releaseWakeLock();
+                this._stopSilentAudio(false);
                 this.audioCtx.suspend();
                 this.resetTimers();
             }
             else {
                 this.paused = false;
                 this._acquireWakeLock();
+                this._startSilentAudio();
                 this.audioCtx.resume();
                 this.setTimers();
             }
@@ -1307,6 +1364,7 @@
 
         this.stop = function() {
             this._releaseWakeLock();
+            this._stopSilentAudio(true);
             if (this.mode == 'audio') {
                 this.gainNode.gain.cancelScheduledValues(this.audioCtx.currentTime);
                 this.gainNode.gain.setValueAtTime(0, this.audioCtx.currentTime);

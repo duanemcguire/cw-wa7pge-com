@@ -40,7 +40,7 @@ const FormState = (() => {
             const el = document.getElementById(id);
             if (el && el.value) url.searchParams.set(param, el.value);
         }
-        const urlStr = url.toString();
+        const urlStr = url.toString().replace(/\+/g, '%20');
         navigator.clipboard.writeText(urlStr).then(() => {
             const orig = buttonEl.innerHTML;
             buttonEl.innerHTML = '&#10003;';

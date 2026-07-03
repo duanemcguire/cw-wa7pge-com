@@ -45,6 +45,7 @@
 <span><span id="wordSpace"></span> ms</span>
         </form>
         
+        <button type="button" onclick="FormState.share({wpm:'wpm',ws:'ws',repititions:'repititions',filename:'selectCollection'},this)">Share</button>
         <button id="buttonPlayCW"  ">Play</button>
         <button id="buttonStopCW"  ">Stop</button>
         <BR>
@@ -229,12 +230,15 @@ async function loadLines(category, file) {
 // Load initial data
 loadLines('Word', '{{ selected_file }}');
 
-// Persist selections
-FormState.restore('wpm');
-FormState.restore('ws');
-if (FormState.restore('repititions')) repititions = Number(repEl.value);
-getWordSpace();
-if (FormState.restore('selectCollection')) loadLines('Word', selectCollection.value);
+// Persist selections (skip restore if opened via share link — URL params already set values)
+const _hasUrlParams = !!window.location.search;
 FormState.autoSave(['wpm', 'ws', 'repititions', 'selectCollection']);
+if (!_hasUrlParams) {
+    FormState.restore('wpm');
+    FormState.restore('ws');
+    if (FormState.restore('repititions')) repititions = Number(repEl.value);
+    getWordSpace();
+    if (FormState.restore('selectCollection')) loadLines('Word', selectCollection.value);
+}
 </script>    
 {% endblock %}

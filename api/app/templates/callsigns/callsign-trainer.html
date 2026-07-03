@@ -26,6 +26,7 @@
   <div class="button-container">
     <button onclick="cwStart()">Start Playing</button>
     <button class="stop-button" onclick="cwStop()">Stop</button>
+    <button type="button" onclick="FormState.share({wpm:'wpm',pspace:'pspace',callspace:'callspace'},this)">Share</button>
   </div>
   <div class="callsign" id="callsignDisplay">&nbsp;</div>
   <div class="optionContainer">
@@ -115,9 +116,19 @@
             _cwSessionStart = null;
         }
     }
-    FormState.restore('wpm');
-    FormState.restore('pspace');
-    FormState.restore('callspace');
     FormState.autoSave(['wpm', 'pspace', 'callspace']);
+    if (window.location.search) {
+        // Apply URL params from share link
+        const _sp = new URLSearchParams(window.location.search);
+        ['wpm', 'pspace', 'callspace'].forEach(id => {
+            const val = _sp.get(id);
+            const el = document.getElementById(id);
+            if (val && el && [...el.options].some(o => o.value === val)) el.value = val;
+        });
+    } else {
+        FormState.restore('wpm');
+        FormState.restore('pspace');
+        FormState.restore('callspace');
+    }
   </script>
 {% endblock %}  

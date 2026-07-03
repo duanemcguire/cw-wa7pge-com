@@ -54,6 +54,7 @@
 <span><span id="wordSpace"></span> ms</span>
         </form>
         
+        <button type="button" onclick="FormState.share({wpm:'wpm',ws:'ws',repititions:'repititions',category:'category',filename:'selectCollection'},this)">Share</button>
         <button id="buttonPlayCW"  ">Play</button>
         <button id="buttonStopCW"  ">Stop</button>
         <BR>
@@ -268,25 +269,28 @@ selectCollection.addEventListener('change', async () => {
 // Load initial data
 loadLines('{{ selected_category }}', '{{ selected_file }}');
 
-// Persist selections
-FormState.restore('wpm');
-FormState.restore('ws');
-if (FormState.restore('repititions')) repititions = Number(repEl.value);
-getWordSpace();
+// Persist selections (skip restore if opened via share link — URL params already set values)
+const _hasUrlParams = !!window.location.search;
 FormState.autoSave(['wpm', 'ws', 'repititions', 'category', 'selectCollection']);
-(async function() {
-    const savedCat = FormState.get('category');
-    const savedCol = FormState.get('selectCollection');
-    if (savedCat && [...category.options].some(o => o.value === savedCat)) {
-        if (category.value !== savedCat) {
-            category.value = savedCat;
-            await loadCollections(savedCat);
+if (!_hasUrlParams) {
+    FormState.restore('wpm');
+    FormState.restore('ws');
+    if (FormState.restore('repititions')) repititions = Number(repEl.value);
+    getWordSpace();
+    (async function() {
+        const savedCat = FormState.get('category');
+        const savedCol = FormState.get('selectCollection');
+        if (savedCat && [...category.options].some(o => o.value === savedCat)) {
+            if (category.value !== savedCat) {
+                category.value = savedCat;
+                await loadCollections(savedCat);
+            }
+            if (savedCol && [...selectCollection.options].some(o => o.value === savedCol)) {
+                selectCollection.value = savedCol;
+            }
+            loadLines(category.value, selectCollection.value);
         }
-        if (savedCol && [...selectCollection.options].some(o => o.value === savedCol)) {
-            selectCollection.value = savedCol;
-        }
-        loadLines(category.value, selectCollection.value);
-    }
-})();
+    })();
+}
 </script>
 {% endblock %}

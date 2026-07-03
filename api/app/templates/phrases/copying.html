@@ -45,7 +45,7 @@
         </select>
 
     </form>
-
+    <button type="button" onclick="FormState.share({wpm:'wpm',ws:'ws',category:'category',filename:'selectCollection'},this)">Share</button>
 
     <button id="buttonGetPhrase"><span style="text-decoration:underline">G</span>et a Phrase</button><BR>
     <button id="buttonPlayCW"  style="visibility: hidden;"><span style="text-decoration:underline">P</span>lay the CW</button>
@@ -194,24 +194,27 @@
     loadLines('{{ selected_category }}', '{{ selected_file }}');
     getWordSpace();
 
-    // Persist selections
-    FormState.restore('wpm');
-    FormState.restore('ws');
-    getWordSpace();
+    // Persist selections (skip restore if opened via share link — URL params already set values)
+    const _hasUrlParams = !!window.location.search;
     FormState.autoSave(['wpm', 'ws', 'category', 'selectCollection']);
-    (async function() {
-        const savedCat = FormState.get('category');
-        const savedCol = FormState.get('selectCollection');
-        if (savedCat && [...categoryEl.options].some(o => o.value === savedCat)) {
-            if (categoryEl.value !== savedCat) {
-                categoryEl.value = savedCat;
-                await loadCollections(savedCat);
+    if (!_hasUrlParams) {
+        FormState.restore('wpm');
+        FormState.restore('ws');
+        getWordSpace();
+        (async function() {
+            const savedCat = FormState.get('category');
+            const savedCol = FormState.get('selectCollection');
+            if (savedCat && [...categoryEl.options].some(o => o.value === savedCat)) {
+                if (categoryEl.value !== savedCat) {
+                    categoryEl.value = savedCat;
+                    await loadCollections(savedCat);
+                }
+                if (savedCol && [...collectionEl.options].some(o => o.value === savedCol)) {
+                    collectionEl.value = savedCol;
+                }
+                loadLines(categoryEl.value, collectionEl.value);
             }
-            if (savedCol && [...collectionEl.options].some(o => o.value === savedCol)) {
-                collectionEl.value = savedCol;
-            }
-            loadLines(categoryEl.value, collectionEl.value);
-        }
-    })();
+        })();
+    }
 </script>
 {% endblock %}

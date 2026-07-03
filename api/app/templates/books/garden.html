@@ -44,6 +44,7 @@
   </form>
   </div>
   <div>
+    <button type="button" onclick="FormState.share({wpm:'wpm',ws:'ws',verse:'verseSelect'},this)">Share</button>
     <button id="buttonPlayCW" style="visibility: hidden">Play the CW</button>
     <button id="buttonPauseCW" style="visibility: hidden">Pause</button>
     <button id="viewText" style="visibility: hidden">View the Text</button>
@@ -148,15 +149,25 @@
     });
     wsEl.addEventListener('change', getWordSpace);
 
-    // Persist selections
-    FormState.restore('wpm');
-    FormState.restore('ws');
-    getWordSpace();
+    // Persist selections; if opened via share link, apply URL params instead of localStorage
+    const _sp = new URLSearchParams(window.location.search);
     FormState.autoSave(['wpm', 'ws', 'verseSelect']);
-    const _savedVerse = FormState.get('verseSelect');
-    if (_savedVerse && [...verseSelect.options].some(o => o.value === _savedVerse)) {
-        verseSelect.value = _savedVerse;
-        loadVerse(_savedVerse);
+    if (window.location.search) {
+        getWordSpace();
+        const _verse = _sp.get('verse');
+        if (_verse && [...verseSelect.options].some(o => o.value === _verse)) {
+            verseSelect.value = _verse;
+            loadVerse(_verse);
+        }
+    } else {
+        FormState.restore('wpm');
+        FormState.restore('ws');
+        getWordSpace();
+        const _savedVerse = FormState.get('verseSelect');
+        if (_savedVerse && [...verseSelect.options].some(o => o.value === _savedVerse)) {
+            verseSelect.value = _savedVerse;
+            loadVerse(_savedVerse);
+        }
     }
 </script>
 

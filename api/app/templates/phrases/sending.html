@@ -17,6 +17,7 @@
         {% endfor %}
     </select>
 </form>
+<button type="button" onclick="FormState.share({category:'category',filename:'selectCollection'},this)">Share</button>
 <button id="buttonGetPhrase">Show a Phrase</button>
 
 <div class="line-display">
@@ -99,22 +100,24 @@
     // Load initial data
     loadLines('{{ selected_category }}', '{{ selected_file }}');
 
-    // Persist selections
+    // Persist selections (skip restore if opened via share link — URL params already set values)
     FormState.autoSave(['category', 'selectCollection']);
-    (async function() {
-        const savedCat = FormState.get('category');
-        const savedCol = FormState.get('selectCollection');
-        if (savedCat && [...categoryEl.options].some(o => o.value === savedCat)) {
-            if (categoryEl.value !== savedCat) {
-                categoryEl.value = savedCat;
-                await loadCollections(savedCat);
+    if (!window.location.search) {
+        (async function() {
+            const savedCat = FormState.get('category');
+            const savedCol = FormState.get('selectCollection');
+            if (savedCat && [...categoryEl.options].some(o => o.value === savedCat)) {
+                if (categoryEl.value !== savedCat) {
+                    categoryEl.value = savedCat;
+                    await loadCollections(savedCat);
+                }
+                if (savedCol && [...collectionEl.options].some(o => o.value === savedCol)) {
+                    collectionEl.value = savedCol;
+                }
+                loadLines(categoryEl.value, collectionEl.value);
             }
-            if (savedCol && [...collectionEl.options].some(o => o.value === savedCol)) {
-                collectionEl.value = savedCol;
-            }
-            loadLines(categoryEl.value, collectionEl.value);
-        }
-    })();
+        })();
+    }
 </script>
 
 {% endblock %}

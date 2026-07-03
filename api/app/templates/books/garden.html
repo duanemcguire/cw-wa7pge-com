@@ -5,6 +5,7 @@
 
 
   <h2>{{book_title}}</h2>
+  <div style="margin:-4px 0 10px;"><span onclick="FormState.share({wpm:'wpm',ws:'ws',verse:'verseSelect'},this)" title="Copy share link" style="cursor:pointer;color:#aaa;font-size:1.1em;"><i class="fas fa-share-alt"></i></span></div>
   <div class="optionContainer">
     <form id="theForm">
     <table style="max-width: 500px;">
@@ -44,7 +45,6 @@
   </form>
   </div>
   <div>
-    <button type="button" onclick="FormState.share({wpm:'wpm',ws:'ws',verse:'verseSelect'},this)">Share</button>
     <button id="buttonPlayCW" style="visibility: hidden">Play the CW</button>
     <button id="buttonPauseCW" style="visibility: hidden">Pause</button>
     <button id="viewText" style="visibility: hidden">View the Text</button>

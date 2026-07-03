@@ -42,9 +42,9 @@ const FormState = (() => {
         }
         const urlStr = url.toString();
         navigator.clipboard.writeText(urlStr).then(() => {
-            const orig = buttonEl.textContent;
-            buttonEl.textContent = 'Copied!';
-            setTimeout(() => { buttonEl.textContent = orig; }, 1500);
+            const orig = buttonEl.innerHTML;
+            buttonEl.innerHTML = '&#10003;';
+            setTimeout(() => { buttonEl.innerHTML = orig; }, 1500);
         }).catch(() => window.prompt('Copy this link:', urlStr));
     }
 

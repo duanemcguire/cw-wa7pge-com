@@ -1,6 +1,6 @@
 // CW WA7PGE — Service Worker
 // Bump CACHE_VERSION when static assets change to force a cache refresh.
-const CACHE_VERSION = 'cw-v3';
+const CACHE_VERSION = 'cw-v4';
 
 const STATIC_ASSETS = [
   '/static/js/jscwlib.js',

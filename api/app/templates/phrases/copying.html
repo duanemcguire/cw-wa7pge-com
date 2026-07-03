@@ -12,7 +12,7 @@
 </style>
 <body>
     <h2>Phrase Copy Practice</h2>
-
+    <div style="margin:-4px 0 10px;"><span onclick="FormState.share({wpm:'wpm',ws:'ws',category:'category',filename:'selectCollection'},this)" title="Copy share link" style="cursor:pointer;color:#aaa;font-size:1.1em;"><i class="fas fa-share-alt"></i></span></div>
 
     <form id='theForm'>
         <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap; margin-bottom:4px;">
@@ -45,8 +45,6 @@
         </select>
 
     </form>
-    <button type="button" onclick="FormState.share({wpm:'wpm',ws:'ws',category:'category',filename:'selectCollection'},this)">Share</button>
-
     <button id="buttonGetPhrase"><span style="text-decoration:underline">G</span>et a Phrase</button><BR>
     <button id="buttonPlayCW"  style="visibility: hidden;"><span style="text-decoration:underline">P</span>lay the CW</button>
     <button id="buttonDisplayTitle" style="visibility: hidden;"><span style="text-decoration:underline">R</span>eveal the Phrase</button>

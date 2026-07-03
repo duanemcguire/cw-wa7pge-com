@@ -3,6 +3,7 @@
 {% block content %}
 
 <h2>Phrase Sending Practice</h2>
+<div style="margin:-4px 0 10px;"><span onclick="FormState.share({category:'category',filename:'selectCollection'},this)" title="Copy share link" style="cursor:pointer;color:#aaa;font-size:1.1em;"><i class="fas fa-share-alt"></i></span></div>
 
 <form id='theForm'>
     Category: <select id='category' style="max-width: 200px;">
@@ -17,7 +18,6 @@
         {% endfor %}
     </select>
 </form>
-<button type="button" onclick="FormState.share({category:'category',filename:'selectCollection'},this)">Share</button>
 <button id="buttonGetPhrase">Show a Phrase</button>
 
 <div class="line-display">

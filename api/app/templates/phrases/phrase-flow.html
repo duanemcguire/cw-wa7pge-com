@@ -14,7 +14,8 @@
 
 <div class="content" >
     <h2>Phrase Flow / IFR</h2>
-    
+    <div style="margin:-4px 0 10px;"><span onclick="FormState.share({wpm:'wpm',ws:'ws',repititions:'repititions',category:'category',filename:'selectCollection'},this)" title="Copy share link" style="cursor:pointer;color:#aaa;font-size:1.1em;"><i class="fas fa-share-alt"></i></span></div>
+
     <div style="float: left">
         <form id='theForm' >
             Category: <select id='category' style="max-width: 200px;">
@@ -54,7 +55,6 @@
 <span><span id="wordSpace"></span> ms</span>
         </form>
         
-        <button type="button" onclick="FormState.share({wpm:'wpm',ws:'ws',repititions:'repititions',category:'category',filename:'selectCollection'},this)">Share</button>
         <button id="buttonPlayCW"  ">Play</button>
         <button id="buttonStopCW"  ">Stop</button>
         <BR>

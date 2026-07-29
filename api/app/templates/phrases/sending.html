@@ -61,7 +61,7 @@
 
     function getLine(){
         const randomIndex = Math.floor(Math.random() * lines.length);
-        return lines[randomIndex].trim().replace('~', '<BR>');
+        return lines[randomIndex].trim();
     }
 
     categoryEl.addEventListener('change', async () => {
@@ -82,7 +82,9 @@
                 });
             }
             line = getLine();
-            document.getElementById('reveal_title').innerHTML = line;
+            document.getElementById('reveal_title').innerHTML = line.replace('~', '<BR>');
+//            for classroom convenience, copy the phrase to the clipboard
+            navigator.clipboard.writeText(line.replace('~', ' ')).catch(() => {});
         }
     });
 

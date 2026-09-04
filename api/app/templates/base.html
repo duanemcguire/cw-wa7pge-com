@@ -217,24 +217,54 @@ $(document).ready(function () {
     navigator.serviceWorker.register('/sw.js', { scope: '/' })
       .then(function(reg) {
         navigator.serviceWorker.addEventListener('message', function(event) {
-          if (event.data && event.data.type === 'CACHE_COMPLETE') {
+          var data = event.data || {};
+          if (data.type === 'CACHE_PROGRESS') {
+            // Don't stomp on the offline warning — that one matters more.
+            if (!navigator.onLine) return;
+            var pct = data.total ? Math.round((data.done / data.total) * 100) : 0;
+            showBanner('Downloading practice material for offline use — ' + pct + '%', '#2980b9');
+          } else if (data.type === 'CACHE_COMPLETE') {
             showBanner('App ready for offline use', '#27ae60');
             setTimeout(hideBanner, 4000);
+          } else if (data.type === 'CACHE_INCOMPLETE') {
+            // Some files didn't make it; the next visit picks them up.
+            hideBanner();
           }
         });
+
         reg.addEventListener('updatefound', function() {
           var newWorker = reg.installing;
+          if (!newWorker) return;
+          showBanner('Updating app…', '#2980b9');
           newWorker.addEventListener('statechange', function() {
             if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
               showBanner('Update available — reload to apply', '#2980b9');
             }
           });
         });
+
+        // Ask the worker to download (or resume downloading) the phrase and
+        // book data. This runs inside the service worker rather than at install
+        // time so it can't starve page navigations; every load resumes it.
+        function warmCache() {
+          if (navigator.serviceWorker.controller) {
+            navigator.serviceWorker.controller.postMessage({ type: 'WARM_CACHE' });
+          }
+        }
+        if (navigator.serviceWorker.controller) warmCache();
+        else navigator.serviceWorker.addEventListener('controllerchange', warmCache);
       })
       .catch(function(err) {
         console.warn('Service Worker registration failed:', err);
       });
   }
 })();
+
+// The Editorial theme only drops `is-preload` on window `load`, which hides the
+// mobile menu entirely until every subresource has arrived. Don't let a single
+// slow request cost the user their navigation.
+setTimeout(function() {
+  document.body.classList.remove('is-preload');
+}, 3000);
 </script>
 

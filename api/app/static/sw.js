@@ -1,7 +1,7 @@
 // CW WA7PGE — Service Worker
 // Bump CACHE_VERSION when static assets change to force a cache refresh.
 const CACHE_PREFIX = 'cw-v';
-const CACHE_VERSION = CACHE_PREFIX + '6';
+const CACHE_VERSION = CACHE_PREFIX + '7';
 
 // The API is served by gunicorn with 2 workers x 4 threads = 8 concurrent
 // requests for the whole site. Keep our own concurrency well under that or we
@@ -19,6 +19,7 @@ const PROGRESS_EVERY = 10;
 const STATIC_ASSETS = [
   '/static/js/jscwlib.js',
   '/static/js/form-state.js',
+  '/static/js/my-phrases.js',
   '/static/manifest.json',
   '/static/images/icon.svg',
   '/static/images/favicon.ico',
@@ -53,6 +54,8 @@ const PAGE_SHELLS = [
   '/phrases/sending',
   '/phrases/ttr',
   '/phrases/phrase-flow',
+  '/phrases/my-phrases',
+  '/phrases/my-phrases/edit',
   '/callsigns/trainer',
   '/books/',
   '/books/garden',

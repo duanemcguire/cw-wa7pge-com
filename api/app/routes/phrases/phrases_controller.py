@@ -8,6 +8,9 @@ log =  logging.getLogger(__name__)
 phrases = Blueprint('phrases', __name__)
 remove_yuk_chars = True
 
+WPM_OPTIONS = [12, 14, 16, 18, 20, 22, 25, 27, 30, 31, 40]
+WS_OPTIONS = ["1", "1.2", "1.4", "1.6", "1.8", "2", "2.2", "2.4", "2.6", "2.8", "3.0"]
+
 def simplify_accents(text):
     nfkd_form = unicodedata.normalize('NFKD', text)
     return "".join([c for c in nfkd_form if not unicodedata.combining(c)])
@@ -108,8 +111,8 @@ def getPhraseAttr():
     attr['selected_category'] = selected_category
     attr['selected_file'] = selected_file
     attr['lines'] = lines
-    attr['wpm_options'] =  [12,14,16,18,20,22,25,27,30,31,40]
-    attr['ws_options'] = ["1","1.2","1.4","1.6","1.8","2","2.2","2.4","2.6","2.8","3.0"]
+    attr['wpm_options'] = WPM_OPTIONS
+    attr['ws_options'] = WS_OPTIONS
     
     return attr
 
@@ -124,7 +127,7 @@ def deprecated1():
 def songtitles():
 
     wpm = request.values.get('wpm')
-    wpm_options = [12,14,16,18,20,22,25,27,30,31,40]
+    wpm_options = WPM_OPTIONS
 
     attr = getPhraseAttr()
     try:
@@ -192,6 +195,30 @@ def phrase_flow():
                            lines=attr['lines'],
                            attr = attr,
                            page_title = 'CW Phrase Flow Practice')
+
+
+## MY PHRASES
+#
+# User-authored phrase files, kept entirely in browser localStorage — there is
+# no server-side storage for these. Both routes only need the option lists, so
+# they deliberately skip getPhraseAttr(), which touches the filesystem and
+# calls os.chdir().
+
+@phrases.route('/my-phrases', methods=['GET'])
+def my_phrases():
+    return render_template('phrases/my-phrases.html',
+                           wpm_options=WPM_OPTIONS,
+                           ws_options=WS_OPTIONS,
+                           wpm=20,
+                           ws="1",
+                           repititions="1",
+                           page_title='My Phrases Flow Practice')
+
+
+@phrases.route('/my-phrases/edit', methods=['GET'])
+def my_phrases_edit():
+    return render_template('phrases/my-phrases-edit.html',
+                           page_title='Edit My Phrases')
 
 
 # ── Offline / PWA API ─────────────────────────────────────────────────────────

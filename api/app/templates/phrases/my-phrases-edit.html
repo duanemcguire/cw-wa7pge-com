@@ -1,0 +1,453 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<style>
+    button {margin-bottom: 4px;}
+    #editorGrid {display: flex; flex-wrap: wrap; gap: 20px;}
+    #fileColumn {min-width: 240px;}
+    #phraseColumn {flex: 1 1 320px; min-width: 280px;}
+    #phraseText {width: 100%; min-height: 320px; font-family: monospace; font-size: 14px;}
+    #status {min-height: 1.4em; margin: 6px 0; font-weight: bold;}
+    .tool-block {border: 1px solid #ccc; padding: 10px; margin-top: 16px; max-width: 620px;}
+    .tool-block h4 {margin-bottom: 6px;}
+    .hint {color: #666; font-size: 0.85em;}
+</style>
+<script src="/static/js/my-phrases.js"></script>
+
+<div class="content">
+    <h2 style="margin-bottom: 0px;">Edit My Phrases</h2>
+    <div style="margin: -4px 0 14px;">
+        <a href="/phrases/my-phrases">&larr; Back to practice</a>
+    </div>
+
+    <div id="status"></div>
+
+    <div id="editorGrid">
+        <div id="fileColumn">
+            <strong>Files (<span id="fileCount">0</span> / <span id="fileMax"></span>)</strong><BR>
+            <select id="fileList" size="10" style="width: 100%;"></select><BR>
+            <button type="button" id="buttonNew">+ New</button>
+            <button type="button" id="buttonRename">Rename</button>
+            <button type="button" id="buttonDelete">Delete</button>
+        </div>
+
+        <div id="phraseColumn">
+            <strong>Phrases &mdash; edit with one of the tools below</strong>
+            <span class="hint" id="lineCount"></span><BR>
+            <textarea id="phraseText" spellcheck="false" placeholder="hows the wx there&#10;rig is an ic 7300&#10;ant is a dipole up 30 ft"></textarea><BR>
+            <button type="button" id="buttonSave">Save</button>
+            <button type="button" id="buttonRevert">Revert</button>
+            <span class="hint">Blank lines are dropped. Limit <span id="maxLines"></span> phrases per file.</span>
+        </div>
+    </div>
+
+    <div class="tool-block">
+        <h4>Paste phrases</h4>
+        <textarea id="pasteText" rows="4" style="width: 100%; font-family: monospace;" spellcheck="false" placeholder="Type or paste a block of text, one phrase per line"></textarea><BR>
+        <button type="button" id="buttonPasteReplace">Replace</button>
+        <button type="button" id="buttonPasteAppend">Append</button>
+        <BR>
+        <span class="hint">
+            <B>Replace</B> discards the phrase list above and uses this text instead.
+            <B>Append</B> adds this text to the end of the list above.
+            Either way, nothing is stored until you click Save.
+        </span>
+    </div>
+
+    <div class="tool-block">
+        <h4>Start from a built-in collection</h4>
+        Category: <select id="seedCategory" style="max-width: 200px;"></select>
+        Collection: <select id="seedCollection" style="max-width: 200px;"></select>
+        <BR>
+        <button type="button" id="buttonSeedReplace">Replace</button>
+        <button type="button" id="buttonSeedAppend">Append</button>
+        <BR>
+        <span class="hint">
+            <B>Replace</B> discards the phrase list above and uses the chosen collection instead.
+            <B>Append</B> adds the collection to the end of the list above.
+            Either way, nothing is stored until you click Save.
+        </span>
+    </div>
+
+    <div class="tool-block">
+        <h4>Export a backup</h4>
+        <button type="button" id="buttonExport">Export all to file</button>
+        <BR>
+        <span class="hint">
+            Saves all your phrase files to a single file on this device.
+            Your phrase files live in this browser only &mdash; clearing your browsing data deletes
+            them, and they do not follow you to another device or another browser. Export a copy to
+            keep them safe.
+        </span>
+    </div>
+
+    <div class="tool-block">
+        <h4>Import a backup</h4>
+        <input type="radio" id="importModeMerge" name="importMode" value="merge" checked>
+        <label for="importModeMerge">Add to my files</label><BR>
+        <input type="radio" id="importModeReplace" name="importMode" value="replace">
+        <label for="importModeReplace">Replace all my files</label><BR>
+        <input type="file" id="importFile" accept=".json,application/json">
+        <BR>
+        <span class="hint">
+            Reads back a file you exported earlier, from this browser or another device.
+            <B>Add to my files</B> keeps the files you already have and adds the imported ones
+            alongside them. <B>Replace all my files</B> deletes your current files first.
+            Choosing a file imports it right away &mdash; there is no Save step here.
+        </span>
+    </div>
+</div>
+
+<script>
+/* ===============================
+   State
+================================ */
+
+const fileListEl = document.getElementById('fileList');
+const phraseTextEl = document.getElementById('phraseText');
+const statusEl = document.getElementById('status');
+const seedCategoryEl = document.getElementById('seedCategory');
+const seedCollectionEl = document.getElementById('seedCollection');
+const pasteTextEl = document.getElementById('pasteText');
+
+let currentId = null;
+let savedText = '';     // what's on disk for currentId, for dirty checking
+
+document.getElementById('fileMax').innerText = MyPhrases.MAX_FILES;
+document.getElementById('maxLines').innerText = MyPhrases.MAX_LINES.toLocaleString();
+
+/* ===============================
+   Status + dirty tracking
+================================ */
+
+function setStatus(msg, isError) {
+    statusEl.innerText = msg || '';
+    statusEl.style.color = isError ? '#c0392b' : '#27ae60';
+}
+
+function isDirty() {
+    return currentId !== null && phraseTextEl.value !== savedText;
+}
+
+// Returns false if the user chose to stay put.
+function confirmDiscard() {
+    if (!isDirty()) return true;
+    return window.confirm('You have unsaved changes to this file. Discard them?');
+}
+
+window.addEventListener('beforeunload', (e) => {
+    if (isDirty()) {
+        e.preventDefault();
+        e.returnValue = '';
+    }
+});
+
+function updateLineCount() {
+    const n = MyPhrases.normalizeLines(phraseTextEl.value).length;
+    document.getElementById('lineCount').innerText = '(' + n + ')';
+}
+
+/* ===============================
+   File list
+================================ */
+
+function renderFileList(selectId) {
+    const files = MyPhrases.list();
+    fileListEl.innerHTML = '';
+    for (const f of files) {
+        const opt = document.createElement('option');
+        opt.value = f.id;
+        opt.textContent = f.name + '  (' + f.lines.length + ')';
+        fileListEl.appendChild(opt);
+    }
+    document.getElementById('fileCount').innerText = files.length;
+
+    const target = files.some(f => f.id === selectId) ? selectId : (files[0] ? files[0].id : null);
+    selectFile(target);
+}
+
+// Loads a file into the editor. Assumes any unsaved work is already resolved.
+function selectFile(id) {
+    currentId = id;
+    if (id === null) {
+        fileListEl.value = '';
+        phraseTextEl.value = '';
+        savedText = '';
+        phraseTextEl.disabled = true;
+    } else {
+        const file = MyPhrases.get(id);
+        fileListEl.value = id;
+        phraseTextEl.value = file ? file.lines.join('\n') : '';
+        savedText = phraseTextEl.value;
+        phraseTextEl.disabled = false;
+    }
+    setEditingEnabled(id !== null);
+    updateLineCount();
+}
+
+function setEditingEnabled(on) {
+    for (const id of ['buttonSave', 'buttonRevert', 'buttonRename', 'buttonDelete',
+                      'buttonPasteReplace', 'buttonPasteAppend', 'buttonSeedAppend']) {
+        document.getElementById(id).disabled = !on;
+    }
+    // Seed/Replace stays live with no file — it creates one named after the collection.
+}
+
+fileListEl.addEventListener('change', () => {
+    const picked = fileListEl.value;
+    if (picked === currentId) return;
+    if (!confirmDiscard()) {
+        fileListEl.value = currentId;
+        return;
+    }
+    setStatus('');
+    selectFile(picked);
+});
+
+/* ===============================
+   New / Rename / Delete / Save
+================================ */
+
+document.getElementById('buttonNew').addEventListener('click', () => {
+    if (MyPhrases.count() >= MyPhrases.MAX_FILES) {
+        setStatus('You already have ' + MyPhrases.MAX_FILES + ' phrase files. Delete one to make room.', true);
+        return;
+    }
+    if (!confirmDiscard()) return;
+    const name = window.prompt('Name for the new phrase file:');
+    if (name === null) return;
+    try {
+        const file = MyPhrases.create(name, []);
+        renderFileList(file.id);
+        setStatus('Created "' + file.name + '".');
+        phraseTextEl.focus();
+    } catch (e) {
+        setStatus(e.message, true);
+    }
+});
+
+document.getElementById('buttonRename').addEventListener('click', () => {
+    if (currentId === null) return;
+    const file = MyPhrases.get(currentId);
+    const name = window.prompt('New name:', file ? file.name : '');
+    if (name === null) return;
+    try {
+        MyPhrases.update(currentId, { name: name });
+        const keepText = phraseTextEl.value;
+        renderFileList(currentId);
+        phraseTextEl.value = keepText;   // don't lose unsaved edits to a rename
+        updateLineCount();
+        setStatus('Renamed.');
+    } catch (e) {
+        setStatus(e.message, true);
+    }
+});
+
+document.getElementById('buttonDelete').addEventListener('click', () => {
+    if (currentId === null) return;
+    const file = MyPhrases.get(currentId);
+    if (!file) return;
+    if (!window.confirm('Delete "' + file.name + '" and its ' + file.lines.length + ' phrases? This cannot be undone.')) return;
+    MyPhrases.remove(currentId);
+    savedText = phraseTextEl.value = '';   // clear dirty state before re-render
+    renderFileList(null);
+    setStatus('Deleted "' + file.name + '".');
+});
+
+document.getElementById('buttonSave').addEventListener('click', () => {
+    if (currentId === null) return;
+    try {
+        const file = MyPhrases.update(currentId, { lines: phraseTextEl.value });
+        // Reflect the normalized result so what's on screen matches what's stored.
+        phraseTextEl.value = file.lines.join('\n');
+        savedText = phraseTextEl.value;
+        renderFileList(currentId);
+        setStatus('Saved ' + file.lines.length + ' phrases to "' + file.name + '".');
+    } catch (e) {
+        setStatus(e.message, true);
+    }
+});
+
+document.getElementById('buttonRevert').addEventListener('click', () => {
+    if (currentId === null) return;
+    if (!confirmDiscard()) return;
+    selectFile(currentId);
+    setStatus('Reverted to the last saved version.');
+});
+
+phraseTextEl.addEventListener('input', updateLineCount);
+
+/* ===============================
+   Paste box
+================================ */
+
+function appendToEditor(lines) {
+    const existing = phraseTextEl.value.replace(/\s*$/, '');
+    phraseTextEl.value = (existing ? existing + '\n' : '') + lines.join('\n');
+    updateLineCount();
+}
+
+document.getElementById('buttonPasteReplace').addEventListener('click', () => {
+    if (currentId === null) return;
+    const lines = MyPhrases.normalizeLines(pasteTextEl.value);
+    if (!lines.length) { setStatus('Nothing to paste.', true); return; }
+    if (!confirmDiscard()) return;
+    phraseTextEl.value = lines.join('\n');
+    pasteTextEl.value = '';
+    updateLineCount();
+    setStatus('Replaced with ' + lines.length + ' phrases. Click Save to keep them.');
+});
+
+document.getElementById('buttonPasteAppend').addEventListener('click', () => {
+    if (currentId === null) return;
+    const lines = MyPhrases.normalizeLines(pasteTextEl.value);
+    if (!lines.length) { setStatus('Nothing to paste.', true); return; }
+    appendToEditor(lines);
+    pasteTextEl.value = '';
+    setStatus('Appended ' + lines.length + ' phrases. Click Save to keep them.');
+});
+
+/* ===============================
+   Seed from a built-in collection
+
+   Reuses the existing offline API the other phrase tools already use.
+================================ */
+
+let seedIndex = { categories: [], files_by_category: {} };
+
+async function loadSeedIndex() {
+    try {
+        const resp = await fetch('/phrases/api/index');
+        seedIndex = await resp.json();
+    } catch (e) {
+        setStatus('Could not load the built-in collections (are you offline?).', true);
+        return;
+    }
+    seedCategoryEl.innerHTML = '';
+    for (const cat of seedIndex.categories) {
+        if (cat === 'Experimental') continue;
+        const opt = document.createElement('option');
+        opt.value = cat;
+        opt.textContent = cat;
+        seedCategoryEl.appendChild(opt);
+    }
+    fillSeedCollections();
+}
+
+function fillSeedCollections() {
+    const files = seedIndex.files_by_category[seedCategoryEl.value] || [];
+    seedCollectionEl.innerHTML = '';
+    for (const f of files) {
+        const opt = document.createElement('option');
+        opt.value = f;
+        opt.textContent = f;
+        seedCollectionEl.appendChild(opt);
+    }
+}
+
+seedCategoryEl.addEventListener('change', fillSeedCollections);
+
+async function fetchSeedLines() {
+    const url = '/phrases/api/data?category=' + encodeURIComponent(seedCategoryEl.value) +
+                '&file=' + encodeURIComponent(seedCollectionEl.value);
+    const resp = await fetch(url);
+    const data = await resp.json();
+    if (data.error) throw new Error(data.error);
+    return MyPhrases.normalizeLines(data.lines || []);
+}
+
+document.getElementById('buttonSeedReplace').addEventListener('click', async () => {
+    if (!seedCollectionEl.value) return;
+    if (!confirmDiscard()) return;
+    try {
+        const lines = await fetchSeedLines();
+        if (currentId === null) {
+            // No file yet — make one named after the collection.
+            const file = MyPhrases.create(seedCollectionEl.value, lines);
+            renderFileList(file.id);
+            setStatus('Created "' + file.name + '" with ' + file.lines.length + ' phrases.');
+            return;
+        }
+        phraseTextEl.value = lines.join('\n');
+        updateLineCount();
+        setStatus('Loaded ' + lines.length + ' phrases. Click Save to keep them.');
+    } catch (e) {
+        setStatus(e.message, true);
+    }
+});
+
+document.getElementById('buttonSeedAppend').addEventListener('click', async () => {
+    if (currentId === null || !seedCollectionEl.value) return;
+    try {
+        const lines = await fetchSeedLines();
+        appendToEditor(lines);
+        setStatus('Appended ' + lines.length + ' phrases. Click Save to keep them.');
+    } catch (e) {
+        setStatus(e.message, true);
+    }
+});
+
+/* ===============================
+   Export / import
+================================ */
+
+document.getElementById('buttonExport').addEventListener('click', () => {
+    if (MyPhrases.count() === 0) { setStatus('There is nothing to export yet.', true); return; }
+    const blob = new Blob([MyPhrases.exportText()], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = MyPhrases.exportFilename();
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    setStatus('Exported ' + MyPhrases.count() + ' phrase files.');
+});
+
+document.getElementById('importFile').addEventListener('change', (event) => {
+    const input = event.target;
+    const file = input.files && input.files[0];
+    if (!file) return;
+    const mode = document.querySelector('input[name="importMode"]:checked').value;
+
+    if (mode === 'replace' && MyPhrases.count() > 0 &&
+        !window.confirm('This deletes all ' + MyPhrases.count() + ' of your current phrase files and replaces them with the imported ones. Continue?')) {
+        input.value = '';
+        return;
+    }
+    if (!confirmDiscard()) { input.value = ''; return; }
+
+    const reader = new FileReader();
+    reader.onload = () => {
+        try {
+            savedText = phraseTextEl.value;   // clear dirty state; list is about to change
+            const result = MyPhrases.importJson(reader.result, mode);
+            renderFileList(currentId);
+            let msg = 'Imported ' + result.added + ' phrase file' + (result.added === 1 ? '' : 's') + '.';
+            if (result.skipped) {
+                msg += ' ' + result.skipped + ' skipped — that would have exceeded the ' +
+                       MyPhrases.MAX_FILES + '-file limit.';
+            }
+            setStatus(msg, result.added === 0);
+        } catch (e) {
+            setStatus(e.message, true);
+        }
+        input.value = '';
+    };
+    reader.onerror = () => {
+        setStatus('Could not read that file.', true);
+        input.value = '';
+    };
+    reader.readAsText(file);
+});
+
+/* ===============================
+   Boot
+================================ */
+
+renderFileList(null);
+loadSeedIndex();
+</script>
+{% endblock %}

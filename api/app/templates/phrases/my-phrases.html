@@ -1,0 +1,294 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<style>
+    button {margin-bottom: 4px;}
+    @media (max-width: 768px) {
+        #hotkeys {
+            display: none;
+        }
+    }
+</style>
+<script src="/static/js/jscwlib.js"></script>
+<script src="/static/js/my-phrases.js"></script>
+
+<div class="content" >
+    <h2 style="margin-bottom: 10px;">My Phrases</h2>
+
+    <div id="emptyState" style="display: none; margin: 5px 0; border: 1px solid black; padding: 10px; background-color: #eeeeee; max-width: 600px;">
+        <strong>You haven't created any phrase files yet.</strong>
+        <BR><BR>
+        This exercise works just like Phrase Flow / IFR, but it runs on phrases you write yourself &mdash;
+        the calls you keep fumbling, your POTA exchange, your rig and antenna, the numbers you always miss.
+        <BR><BR>
+        <a href="/phrases/my-phrases/edit"><button type="button">Create my first phrase file</button></a>
+    </div>
+
+    <div id="practiceUI" style="display: none;">
+        <div style="float: left">
+            <form id='theForm' >
+                Collection: <select id="selectCollection" style="width: 200px;"></select>
+
+                WPM:
+
+            <select name="wpm" id="wpm" style="width: 150px;" >
+                {% for wpm_option in wpm_options %}
+                    <option value="{{wpm_option}}" {% if wpm_option == wpm %}selected{% endif %}>{{wpm_option}} </option>
+                {% endfor %}
+            </select>
+
+            Repetitions: <select name="repititions" id="repititions" style="width: 150px;" >
+                <option value="1">1</option>
+                <option value="2" {% if repititions == '2' %} selected {% endif %}>2</option>
+                <option value="3" {% if repititions == '3' %} selected {% endif %}>3</option>
+            </select>
+
+            Word Spacing: <select name="ws" id="ws" style="width: 150px;" >
+                 {% for ws_option in ws_options %}
+                    <option value="{{ws_option}}" {% if ws_option == ws %}selected{% endif %}>{{ws_option}} {% if ws_option == "1" %} (Standard) {% endif %}</option>
+                {% endfor %}
+            </select>
+    <span><span id="wordSpace"></span> ms</span>
+            </form>
+
+            <button id="buttonPlayCW">Play</button>
+            <button id="buttonStopCW">Stop</button>
+            <a href="/phrases/my-phrases/edit" style="margin-left: 12px;">Edit my phrases &rarr;</a>
+            <BR>
+
+        </div>
+        <div style="margin: 5px; float: left; border: 1px solid black; padding: 3px; background-color: #eeeeee; max-width: 600px;" >
+            <H2>My Phrases</H2>
+            This is a phrase flow and Instant Flow Recovery (IFR) exercise running on your own phrase files.
+            Go with the flow. Focus on forward motion. If a word is missed, ignore it. Focus on catching the next word.
+            <BR><BR>
+
+                The initial setting is 20 wpm with standard word spacing (420 milliseconds).
+            <BR><BR>
+
+            Set the WPM and word spacing so that you are missing some but not all of the words as they flow by.
+            That difficulty level will be the sweet spot for improving your flow recovery skills.
+            <BR><BR>
+            If you change the repetitions to 2 or 3, you may confirm your recognition by listening again.
+            <BR><BR>
+            Your phrase files are stored in this browser only. Use <a href="/phrases/my-phrases/edit">Edit my phrases</a>
+            to export a backup copy before you clear your browser data or move to another device.
+        </div>
+    </div>
+
+</div>
+
+
+ <script>
+
+/* ===============================
+   Constants
+================================ */
+const repEl = document.getElementById('repititions')
+const wpmEl = document.getElementById('wpm')
+const wsEl = document.getElementById('ws')
+const collectionEl = document.getElementById('selectCollection')
+
+/* ===============================
+   CW Player State
+================================ */
+
+let player = null;
+let running = false;
+let lines = [];
+let prefix = 'VVV  ';
+// A file of nothing but single words plays like Word Flow — no BT between
+// items. Anything longer keeps the "=" break so phrase boundaries stay audible.
+let singleWordFile = false;
+let lastline = '';
+let repcount = 0;
+let repititions = {{ repititions }};
+let _cwSessionStart = null;
+document.getElementById('wordSpace').innerText = getWordSpace();
+
+/* ===============================
+   Initialization
+================================ */
+
+function initPlayer() {
+    if (player) return;
+
+    player = new jscw();
+    player.init();
+
+    player.onFinished = playNext;
+}
+
+/* ===============================
+   Play / Stop Controls
+================================ */
+
+function startCW() {
+    if (running) return;
+    if (!lines.length) {
+        alert('That phrase file is empty. Add some phrases first.');
+        return;
+    }
+
+    running = true;
+    prefix = 'VVV  ';
+    _cwSessionStart = Date.now();
+    // Phrase file names and contents are the user's own writing — report only
+    // shape, never the text itself.
+    gtag('event', 'cw_session_start', {
+        tool: 'my_phrases',
+        wpm: Number(wpmEl.value),
+        collection_index: collectionEl.selectedIndex,
+        line_count: lines.length
+    });
+    initPlayer();
+    playNext();
+}
+
+function stopCW() {
+    running = false;
+    if (_cwSessionStart !== null) {
+        gtag('event', 'cw_session_stop', {
+            tool: 'my_phrases',
+            wpm: Number(wpmEl.value),
+            collection_index: collectionEl.selectedIndex,
+            line_count: lines.length,
+            duration_seconds: Math.round((Date.now() - _cwSessionStart) / 1000)
+        });
+        _cwSessionStart = null;
+    }
+    if (player) {
+        player.stop();
+
+        // Close AudioContext if exposed (Android friendly)
+        if (player.context && player.context.state !== 'closed') {
+            player.context.close();
+        }
+
+        player = null;
+    }
+}
+
+/* ===============================
+   Playback Loop
+================================ */
+
+function playNext() {
+    if (!running || !player) return;
+
+    const speed = Number(wpmEl.value);
+    player.setWpm(speed);
+    player.setEws(getEWS());
+
+    const word = getLine();
+    console.log(word);
+    player.play(prefix + " " + word + " ");
+    prefix = singleWordFile ? '' : "  =   ";
+
+}
+
+
+/* ===============================
+   Helpers
+================================ */
+
+function getWordSpace() {
+    const speed = Number(wpmEl.value);
+    const ws = Number(wsEl.value);
+    const spacing = Math.floor(8400 * ws / speed);
+
+    document.getElementById('wordSpace').innerText = spacing;
+    return spacing;
+}
+
+// Local phrases never went through the server's normalizer, so that runs here.
+// The ~ and () conventions match the built-in collections.
+function transformLine(raw) {
+    const line = MyPhrases.simplifyCwLine(raw).trim().replace(/~/g, " ");
+    return line.replace(/[()]/g, " = ");
+}
+
+function getLine() {
+    repcount++;
+        let line = null;
+        if (repcount >= repititions) {
+            randomIndex = Math.floor(Math.random() * lines.length);
+            line = transformLine(lines[randomIndex]);
+            lastline = line;
+            repcount = 0;
+        } else {
+            line = lastline;
+        }
+    return line;
+}
+
+function getEWS(){
+    return wsEl.options[wsEl.selectedIndex].value - 1;
+
+}
+
+/* ===============================
+   Local phrase files
+================================ */
+
+// Fills the Collection dropdown. Returns the number of files found.
+function loadCollections() {
+    const files = MyPhrases.list();
+    collectionEl.innerHTML = '';
+    for (const f of files) {
+        const opt = document.createElement('option');
+        opt.value = f.id;
+        opt.textContent = f.name + ' (' + f.lines.length + ')';
+        collectionEl.appendChild(opt);
+    }
+    return files.length;
+}
+
+function loadLines(id) {
+    const file = MyPhrases.get(id);
+    lines = file ? file.lines : [];
+    // Judged on the transformed text, so "well-known" (a hyphen becomes a
+    // space) counts as two words, exactly as it will be sent.
+    singleWordFile = lines.length > 0 && lines.every(l => !/\s/.test(transformLine(l)));
+}
+
+/* ===============================
+   Event Wiring
+================================ */
+
+buttonPlayCW.addEventListener('click', startCW);
+buttonStopCW.addEventListener('click', stopCW);
+
+repEl.addEventListener('change', () => {
+    repititions = Number(repEl.value);
+});
+
+wpmEl.addEventListener('change', getWordSpace);
+wsEl.addEventListener('change', getWordSpace);
+
+collectionEl.addEventListener('change', () => {
+    stopCW();
+    loadLines(collectionEl.value);
+});
+
+// Load initial data
+if (loadCollections() === 0) {
+    document.getElementById('emptyState').style.display = 'block';
+} else {
+    document.getElementById('practiceUI').style.display = 'block';
+
+    // Persist selections (skip restore if opened via share link — URL params already set values)
+    const _hasUrlParams = !!window.location.search;
+    FormState.autoSave(['wpm', 'ws', 'repititions', 'selectCollection']);
+    if (!_hasUrlParams) {
+        FormState.restore('wpm');
+        FormState.restore('ws');
+        if (FormState.restore('repititions')) repititions = Number(repEl.value);
+        getWordSpace();
+        FormState.restore('selectCollection');
+    }
+    loadLines(collectionEl.value);
+}
+</script>
+{% endblock %}

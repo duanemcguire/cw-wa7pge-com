@@ -235,7 +235,7 @@ function loadCollections() {
     for (const f of files) {
         const opt = document.createElement('option');
         opt.value = f.id;
-        opt.textContent = f.name + ' (' + f.lines.length + ')';
+        opt.textContent = f.name;
         collectionEl.appendChild(opt);
     }
     return files.length;

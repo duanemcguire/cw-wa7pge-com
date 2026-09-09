@@ -12,6 +12,11 @@
     .tool-block {border: 1px solid #ccc; padding: 10px; margin-top: 16px; max-width: 620px;}
     .tool-block h4 {margin-bottom: 6px;}
     .hint {color: #666; font-size: 0.85em;}
+    /* Edit tools are unusable with no file selected — say so visually, not just
+       via the disabled attribute. */
+    .tool-block.needs-file {opacity: 0.5;}
+    #charWarning {display: none; color: #9c5700; background: #fdf3e2; border: 1px solid #e8c88a;
+                  padding: 5px 8px; margin: 4px 0; font-size: 0.9em; max-width: 100%;}
 </style>
 <script src="/static/js/my-phrases.js"></script>
 
@@ -33,16 +38,16 @@
         </div>
 
         <div id="phraseColumn">
-            <strong>Phrases &mdash; edit with one of the tools below</strong>
-            <span class="hint" id="lineCount"></span><BR>
-            <textarea id="phraseText" spellcheck="false" placeholder="hows the wx there&#10;rig is an ic 7300&#10;ant is a dipole up 30 ft"></textarea><BR>
+            <strong id="phraseHeading"></strong><BR>
+            <textarea id="phraseText" spellcheck="false" placeholder="Empty"></textarea>
+            <div id="charWarning"></div>
             <button type="button" id="buttonSave">Save</button>
             <button type="button" id="buttonRevert">Revert</button>
             <span class="hint">Blank lines are dropped. Limit <span id="maxLines"></span> phrases per file.</span>
         </div>
     </div>
 
-    <div class="tool-block">
+    <div class="tool-block" id="blockPaste">
         <h4>Paste phrases</h4>
         <textarea id="pasteText" rows="4" style="width: 100%; font-family: monospace;" spellcheck="false" placeholder="Type or paste a block of text, one phrase per line"></textarea><BR>
         <button type="button" id="buttonPasteReplace">Replace</button>
@@ -55,7 +60,7 @@
         </span>
     </div>
 
-    <div class="tool-block">
+    <div class="tool-block" id="blockSeed">
         <h4>Start from a built-in collection</h4>
         Category: <select id="seedCategory" style="max-width: 200px;"></select>
         Collection: <select id="seedCollection" style="max-width: 200px;"></select>
@@ -110,6 +115,8 @@ const statusEl = document.getElementById('status');
 const seedCategoryEl = document.getElementById('seedCategory');
 const seedCollectionEl = document.getElementById('seedCollection');
 const pasteTextEl = document.getElementById('pasteText');
+const headingEl = document.getElementById('phraseHeading');
+const warningEl = document.getElementById('charWarning');
 
 let currentId = null;
 let savedText = '';     // what's on disk for currentId, for dirty checking
@@ -143,9 +150,23 @@ window.addEventListener('beforeunload', (e) => {
     }
 });
 
-function updateLineCount() {
-    const n = MyPhrases.normalizeLines(phraseTextEl.value).length;
-    document.getElementById('lineCount').innerText = '(' + n + ')';
+// Keeps the heading and the unusual-character warning in step with the editor.
+// Called after anything that changes the text or the selected file.
+function updatePhraseMeta() {
+    const file = currentId === null ? null : MyPhrases.get(currentId);
+    // textContent, not innerHTML — the file name is the user's own text.
+    headingEl.textContent = file
+        ? ' Phrases from your file,  "' + file.name + '". Edit with one of the tools below'
+        : 'No file selected — create or select a phrase file';
+
+    const odd = file ? MyPhrases.unusualChars(phraseTextEl.value) : [];
+    if (odd.length) {
+        warningEl.textContent =
+            'Warning: The following characters are unusual for Morse code: ' + odd.join(' ');
+        warningEl.style.display = 'block';
+    } else {
+        warningEl.style.display = 'none';
+    }
 }
 
 /* ===============================
@@ -158,7 +179,7 @@ function renderFileList(selectId) {
     for (const f of files) {
         const opt = document.createElement('option');
         opt.value = f.id;
-        opt.textContent = f.name + '  (' + f.lines.length + ')';
+        opt.textContent = f.name;
         fileListEl.appendChild(opt);
     }
     document.getElementById('fileCount').innerText = files.length;
@@ -183,15 +204,20 @@ function selectFile(id) {
         phraseTextEl.disabled = false;
     }
     setEditingEnabled(id !== null);
-    updateLineCount();
+    updatePhraseMeta();
 }
 
+// With no file selected there is nothing to edit into, so every edit control is
+// inert — including the inputs, not just the buttons. Export and Import stay
+// live on purpose: Import is how you recover when you have no files at all.
 function setEditingEnabled(on) {
     for (const id of ['buttonSave', 'buttonRevert', 'buttonRename', 'buttonDelete',
-                      'buttonPasteReplace', 'buttonPasteAppend', 'buttonSeedAppend']) {
+                      'pasteText', 'buttonPasteReplace', 'buttonPasteAppend',
+                      'seedCategory', 'seedCollection', 'buttonSeedReplace', 'buttonSeedAppend']) {
         document.getElementById(id).disabled = !on;
     }
-    // Seed/Replace stays live with no file — it creates one named after the collection.
+    document.getElementById('blockPaste').classList.toggle('needs-file', !on);
+    document.getElementById('blockSeed').classList.toggle('needs-file', !on);
 }
 
 fileListEl.addEventListener('change', () => {
@@ -237,7 +263,7 @@ document.getElementById('buttonRename').addEventListener('click', () => {
         const keepText = phraseTextEl.value;
         renderFileList(currentId);
         phraseTextEl.value = keepText;   // don't lose unsaved edits to a rename
-        updateLineCount();
+        updatePhraseMeta();
         setStatus('Renamed.');
     } catch (e) {
         setStatus(e.message, true);
@@ -276,7 +302,7 @@ document.getElementById('buttonRevert').addEventListener('click', () => {
     setStatus('Reverted to the last saved version.');
 });
 
-phraseTextEl.addEventListener('input', updateLineCount);
+phraseTextEl.addEventListener('input', updatePhraseMeta);
 
 /* ===============================
    Paste box
@@ -285,7 +311,7 @@ phraseTextEl.addEventListener('input', updateLineCount);
 function appendToEditor(lines) {
     const existing = phraseTextEl.value.replace(/\s*$/, '');
     phraseTextEl.value = (existing ? existing + '\n' : '') + lines.join('\n');
-    updateLineCount();
+    updatePhraseMeta();
 }
 
 document.getElementById('buttonPasteReplace').addEventListener('click', () => {
@@ -295,7 +321,7 @@ document.getElementById('buttonPasteReplace').addEventListener('click', () => {
     if (!confirmDiscard()) return;
     phraseTextEl.value = lines.join('\n');
     pasteTextEl.value = '';
-    updateLineCount();
+    updatePhraseMeta();
     setStatus('Replaced with ' + lines.length + ' phrases. Click Save to keep them.');
 });
 
@@ -358,19 +384,12 @@ async function fetchSeedLines() {
 }
 
 document.getElementById('buttonSeedReplace').addEventListener('click', async () => {
-    if (!seedCollectionEl.value) return;
+    if (currentId === null || !seedCollectionEl.value) return;
     if (!confirmDiscard()) return;
     try {
         const lines = await fetchSeedLines();
-        if (currentId === null) {
-            // No file yet — make one named after the collection.
-            const file = MyPhrases.create(seedCollectionEl.value, lines);
-            renderFileList(file.id);
-            setStatus('Created "' + file.name + '" with ' + file.lines.length + ' phrases.');
-            return;
-        }
         phraseTextEl.value = lines.join('\n');
-        updateLineCount();
+        updatePhraseMeta();
         setStatus('Loaded ' + lines.length + ' phrases. Click Save to keep them.');
     } catch (e) {
         setStatus(e.message, true);

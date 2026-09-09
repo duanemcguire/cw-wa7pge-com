@@ -31,6 +31,28 @@ const MyPhrases = (() => {
     }
 
     /* ===============================
+       Unusual-character warning
+
+       Advisory only — this never changes what gets stored or sent. Anything
+       outside this set still plays; simplifyCwLine() either translates it or
+       turns it into a space. Widen MORSE_OK to quiet the warning.
+    ================================ */
+
+    const MORSE_OK = /[A-Za-z0-9\s.,\/=?-]/;
+
+    // Distinct offending characters, in first-seen order.
+    function unusualChars(input) {
+        const text = Array.isArray(input) ? input.join('\n')
+                                          : String(input == null ? '' : input);
+        const found = [];
+        for (const ch of text) {                       // by code point, so
+            if (MORSE_OK.test(ch)) continue;           // emoji count as one
+            if (found.indexOf(ch) === -1) found.push(ch);
+        }
+        return found;
+    }
+
+    /* ===============================
        Persistence
     ================================ */
 
@@ -223,6 +245,6 @@ const MyPhrases = (() => {
         list, get, count, create, update, remove,
         normalizeLines, validateName,
         exportText, exportFilename, importJson,
-        simplifyCwLine,
+        simplifyCwLine, unusualChars,
     };
 })();

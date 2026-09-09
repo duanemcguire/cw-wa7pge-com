@@ -1,7 +1,7 @@
 // CW WA7PGE — Service Worker
 // Bump CACHE_VERSION when static assets change to force a cache refresh.
 const CACHE_PREFIX = 'cw-v';
-const CACHE_VERSION = CACHE_PREFIX + '7';
+const CACHE_VERSION = CACHE_PREFIX + '8';
 
 // The API is served by gunicorn with 2 workers x 4 threads = 8 concurrent
 // requests for the whole site. Keep our own concurrency well under that or we
@@ -275,7 +275,14 @@ self.addEventListener('fetch', (event) => {
 });
 
 async function cacheFirst(request) {
-  const cached = await caches.match(request);
+  // Check this version's cache first. `caches.match()` searches every cache in
+  // creation order, so while activate() is still holding the previous version
+  // as a fallback, the OLD cache wins — and a CACHE_VERSION bump silently fails
+  // to deliver an updated JS or CSS file. Falling back to caches.match() only
+  // when the current cache has no copy keeps the no-offline-gap behaviour that
+  // retention is there for.
+  const cache = await caches.open(CACHE_VERSION);
+  const cached = (await cache.match(request)) || (await caches.match(request));
   if (cached) return cached;
   try {
     const response = await fetch(request);

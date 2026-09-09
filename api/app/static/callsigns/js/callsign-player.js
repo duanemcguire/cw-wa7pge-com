@@ -59,11 +59,15 @@ async function playCallsign() {
 function startPlayback() {
     if (!playing) {
         playing = true;
+        // Held across the whole session: the callspace gap between callsigns
+        // can run to 10s of silence, which is long enough for Auto-Lock.
+        CWWakeLock.request();
         firstOne = true;
         playCallsign();
         }
     }
 function stopPlayback() {
     playing = false;
+    CWWakeLock.release();
     }
     

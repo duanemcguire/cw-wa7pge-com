@@ -1,7 +1,7 @@
 // CW WA7PGE — Service Worker
 // Bump CACHE_VERSION when static assets change to force a cache refresh.
 const CACHE_PREFIX = 'cw-v';
-const CACHE_VERSION = CACHE_PREFIX + '8';
+const CACHE_VERSION = CACHE_PREFIX + '9';
 
 // The API is served by gunicorn with 2 workers x 4 threads = 8 concurrent
 // requests for the whole site. Keep our own concurrency well under that or we
@@ -20,6 +20,7 @@ const STATIC_ASSETS = [
   '/static/js/jscwlib.js',
   '/static/js/form-state.js',
   '/static/js/my-phrases.js',
+  '/static/js/wake-lock.js',
   '/static/manifest.json',
   '/static/images/icon.svg',
   '/static/images/favicon.ico',

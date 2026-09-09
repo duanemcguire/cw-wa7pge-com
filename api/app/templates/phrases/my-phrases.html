@@ -128,6 +128,7 @@ function startCW() {
     }
 
     running = true;
+    CWWakeLock.request();
     prefix = 'VVV  ';
     _cwSessionStart = Date.now();
     // Phrase file names and contents are the user's own writing — report only
@@ -144,6 +145,7 @@ function startCW() {
 
 function stopCW() {
     running = false;
+    CWWakeLock.release();
     if (_cwSessionStart !== null) {
         gtag('event', 'cw_session_stop', {
             tool: 'my_phrases',

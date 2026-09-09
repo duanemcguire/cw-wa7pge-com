@@ -125,6 +125,7 @@ function startCW() {
     if (running) return;
 
     running = true;
+    CWWakeLock.request();
     prefix = 'VVV  ';
     _cwSessionStart = Date.now();
     gtag('event', 'cw_session_start', {
@@ -139,6 +140,7 @@ function startCW() {
 
 function stopCW() {
     running = false;
+    CWWakeLock.release();
     if (_cwSessionStart !== null) {
         gtag('event', 'cw_session_stop', {
             tool: 'phrase_flow',

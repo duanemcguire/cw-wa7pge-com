@@ -164,8 +164,10 @@ async function warmBulkCache() {
 }
 
 // Build the list of phrase + book data URLs from the two index endpoints.
-// Reads them from the cache (precached at install) to avoid extra requests.
+// Fetches them fresh so newly added files get warmed; falls back to the cache.
 async function collectBulkUrls(cache) {
+  await fetchIntoCache(cache, DATA_INDEXES, DATA_INDEXES.length);
+
   const urls = [];
 
   const phrases = await readJson(cache, '/phrases/api/index');
@@ -263,10 +265,23 @@ self.addEventListener('fetch', (event) => {
   // Only handle same-origin requests beyond this point
   if (url.origin !== self.location.origin) return;
 
-  // API data + static assets: cache-first
+  // Indexes: network-first, so newly added phrase/book files show up without a
+  // CACHE_VERSION bump. Falls back to the cache when offline or slow.
+  if (DATA_INDEXES.includes(url.pathname)) {
+    event.respondWith(networkFirstData(request));
+    return;
+  }
+
+  // Phrase/book data: serve the cached copy instantly (works offline), refresh
+  // it in the background so edited files are picked up on the next load.
   if (url.pathname.startsWith('/phrases/api/') ||
-      url.pathname.startsWith('/books/api/')   ||
-      url.pathname.startsWith('/static/')) {
+      url.pathname.startsWith('/books/api/')) {
+    event.respondWith(staleWhileRevalidate(request));
+    return;
+  }
+
+  // Static assets: cache-first (bump CACHE_VERSION to refresh)
+  if (url.pathname.startsWith('/static/')) {
     event.respondWith(cacheFirst(request));
     return;
   }
@@ -329,9 +344,31 @@ async function networkFirstWithFallback(request) {
   return htmlResponse(navigator.onLine ? UPDATING_PAGE : OFFLINE_PAGE);
 }
 
+// Network-first for small JSON data, with a soft timeout so a stalled
+// connection falls back to the cache instead of hanging.
+async function networkFirstData(request) {
+  const network = fetch(request).then(async response => {
+    if (response.ok) {
+      const cache = await caches.open(CACHE_VERSION);
+      await cache.put(request, response.clone());
+    }
+    return response;
+  }).catch(() => null);
+
+  const fresh = await Promise.race([network, timeoutAfter(NAV_SOFT_TIMEOUT_MS)]);
+  if (fresh && fresh.ok) return fresh;
+
+  const cache = await caches.open(CACHE_VERSION);
+  const cached = (await cache.match(request)) || (await caches.match(request));
+  if (cached) return cached;
+
+  const late = await network;
+  return late || htmlResponse(OFFLINE_PAGE);
+}
+
 async function staleWhileRevalidate(request) {
   const cache = await caches.open(CACHE_VERSION);
-  const cached = await cache.match(request);
+  const cached = (await cache.match(request)) || (await caches.match(request));
   const networkFetch = fetch(request).then(response => {
     if (response.ok || response.type === 'opaque') {
       cache.put(request, response.clone());

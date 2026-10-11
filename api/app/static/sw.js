@@ -1,7 +1,7 @@
 // CW WA7PGE — Service Worker
 // Bump CACHE_VERSION when static assets change to force a cache refresh.
 const CACHE_PREFIX = 'cw-v';
-const CACHE_VERSION = CACHE_PREFIX + '9';
+const CACHE_VERSION = CACHE_PREFIX + '10';
 
 // The API is served by gunicorn with 2 workers x 4 threads = 8 concurrent
 // requests for the whole site. Keep our own concurrency well under that or we
@@ -62,6 +62,7 @@ const PAGE_SHELLS = [
   '/books/garden',
   '/books/aesops_fables',
   '/books/peter_pan',
+  '/books/oz',
   '/books/wisteria',
   '/books/princess_of_mars',
 ];

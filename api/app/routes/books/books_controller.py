@@ -61,7 +61,7 @@ def get_verse_files(text_dir):
                 verses.append(verse)
                 log.debug(verse.__str__)
             verses.sort(key=lambda v: v.key)
-        case "ACD-Wisteria-Lodge" | "peter_pan_text":
+        case "ACD-Wisteria-Lodge" | "peter_pan_text" | "oz_text":
             versedir = os.listdir(TEXT_FOLDER)
             for f in versedir:
                 if f.endswith(".txt"):
@@ -118,6 +118,10 @@ def wisteria():
 def peterpan():
     return verses('peter_pan_text', 'Part', "Peter Pan -- J.M. Barrie", 'peter_pan')
 
+@books.route('/oz', methods=['GET', 'POST'])
+def oz():
+    return verses('oz_text', 'Part', "The Wonderful Wizard of Oz -- L. Frank Baum", 'oz')
+
 @books.route('/aesops_fables', methods=['GET', 'POST'])
 def aesop():
     return verses('aesops_fables', 'Fable', "Aesop's Fables", 'aesops_fables')
@@ -130,6 +134,7 @@ _BOOK_CONFIGS = [
     ('aesops_fables',    'aesops_fables',         'Fable',        "Aesop's Fables"),
     ('peter_pan',        'peter_pan_text',        'Part',         "Peter Pan"),
     ('wisteria',         'ACD-Wisteria-Lodge',    'Part',         "Wisteria Lodge"),
+    ('oz',               'oz_text',               'Part',         "The Wonderful Wizard of Oz"),
     ('princess_of_mars', 'princess_of_mars_text', 'Chapter/Part', "The Princess of Mars"),
 ]
 

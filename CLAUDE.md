@@ -60,7 +60,7 @@ Each feature is a self-contained blueprint under `api/app/routes/`:
 
 - `main/` — Home page and user guide
 - `phrases/` — Core CW phrase practice (copy, send, word flow, phrase flow); 7,700+ phrases in `text_files/` organized by category (Word, Saying, Song Title, Movie, Book Title, etc.)
-- `books/` — Classic literature practice (Garden of Verses, Princess of Mars, Peter Pan, Aesop's Fables, Wisteria Lodge)
+- `books/` — Classic literature practice (Garden of Verses, Peter Pan, Aesop's Fables, Wizard of Oz)
 - `callsigns/` — Callsign trainer
 - `hello/` — Reference blueprint showing DB + aiosql patterns with visitor log
 - `upload/` — File upload example

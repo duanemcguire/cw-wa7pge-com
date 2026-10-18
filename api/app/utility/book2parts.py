@@ -97,8 +97,23 @@ def load_chapters(path):
     return clean(title), chapters
 
 
+# Words ending in a period that don't end a sentence: titles, abbreviated
+# names, and single-letter initials (excluding "I", which often ends one).
+ABBREV_RE = re.compile(
+    r'(?:^|\s)(?:Mr|Mrs|Ms|Messrs|Mme|Dr|St|Capt|Col|Gen|Lt|Sgt|Rev|Prof|'
+    r'Sr|Jr|Mt|Robt|Wm|Geo|Chas|Jas|Thos|Jno|[A-HJ-Z])\.$')
+
+
 def sentences(paragraph):
-    return re.split(r'(?<=[.?!])\s+', ' '.join(paragraph.split()))
+    pieces = re.split(r'(?<=[.?!])\s+', ' '.join(paragraph.split()))
+    merged = []
+    for piece in pieces:
+        if merged and (ABBREV_RE.search(merged[-1]) or
+                       (re.search(r'(?:^|\s)No\.$', merged[-1]) and piece[:1].isdigit())):
+            merged[-1] += ' ' + piece
+        else:
+            merged.append(piece)
+    return merged
 
 
 def split_parts(paragraphs, budget):

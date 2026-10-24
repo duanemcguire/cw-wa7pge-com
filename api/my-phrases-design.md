@@ -136,7 +136,7 @@ Backup   [Export all to file]   [Import from file…]
 
 ### 5. Menu — `api/app/templates/base.html`
 
-One entry immediately after the Phrase Flow/IFR line (line 112):
+One entry immediately after the Phrase Flow line (line 112):
 
 ```html
 <li><a href="/phrases/my-phrases">My Phrases</a></li>
@@ -161,7 +161,7 @@ warm needed — a nice property worth calling out in the user guide.
 
 ### 7. User guide — `api/app/templates/user-guide.html`
 
-Add a `Practice Tool: My Phrases` section after the Phrase Flow / IFR section
+Add a `Practice Tool: My Phrases` section after the Phrase Flow section
 (line 99), matching the existing `<h3>` + anchor style. Cover: the 10-file limit,
 one phrase per line, that files live in this browser only, and that Export is
 how you move them to another device or guard against clearing site data.

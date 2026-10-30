@@ -198,10 +198,14 @@ $(document).ready(function () {
   ].join(';');
   document.body.appendChild(banner);
 
-  function showBanner(msg, color) {
+  // `onTap` makes the banner a button. Installed PWAs (iOS especially) have
+  // no reload control, so any banner that asks for a reload must do it itself.
+  function showBanner(msg, color, onTap) {
     banner.textContent = msg;
     banner.style.background = color;
     banner.style.color = '#fff';
+    banner.style.cursor = onTap ? 'pointer' : '';
+    banner.onclick = onTap || null;
     banner.style.display = 'block';
   }
   function hideBanner() { banner.style.display = 'none'; }
@@ -240,7 +244,9 @@ $(document).ready(function () {
           showBanner('Updating app…', '#2980b9');
           newWorker.addEventListener('statechange', function() {
             if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-              showBanner('Update available — reload to apply', '#2980b9');
+              showBanner('Update available — tap here to reload', '#2980b9', function() {
+                location.reload();
+              });
             }
           });
         });

@@ -75,6 +75,13 @@ const GOOGLE_FONT_HOSTS = ['fonts.googleapis.com', 'fonts.gstatic.com'];
 // The ~800 phrase/book data files are NOT fetched here. Pulling them during
 // install saturates the server and any navigation that happens meanwhile hangs.
 // They are warmed in the background after activation instead (see WARM_CACHE).
+//
+// If the server couldn't be reached for any of these (network error or 5xx —
+// typically a deploy in progress), install fails. The browser keeps the old
+// worker and its intact cache, and retries the update on a later visit. Without
+// this, a worker installed mid-deploy activates with an empty cache and the
+// user has no offline fallback at all. A 4xx is a genuinely missing page, not
+// a server outage, so it doesn't block install.
 
 self.addEventListener('install', (event) => {
   event.waitUntil(
@@ -85,7 +92,10 @@ self.addEventListener('install', (event) => {
 async function precacheCritical() {
   const cache = await caches.open(CACHE_VERSION);
   const urls = [...STATIC_ASSETS, ...PAGE_SHELLS, ...DATA_INDEXES];
-  await fetchIntoCache(cache, urls, INSTALL_CONCURRENCY);
+  const failed = await fetchIntoCache(cache, urls, INSTALL_CONCURRENCY);
+  if (failed.length) {
+    throw new Error(`[SW] Install aborted, ${failed.length} critical URLs unreachable: ${failed.join(', ')}`);
+  }
 }
 
 // ── Activate: take over, but keep the previous cache as a fallback ────────────
@@ -202,8 +212,10 @@ async function readJson(cache, url) {
 }
 
 // Fetch `urls` into `cache` with a bounded number of in-flight requests.
+// Returns the URLs the server couldn't deliver (network error or 5xx).
 async function fetchIntoCache(cache, urls, concurrency, onEach) {
   const queue = urls.slice();
+  const failed = [];
 
   async function worker() {
     while (queue.length) {
@@ -211,8 +223,10 @@ async function fetchIntoCache(cache, urls, concurrency, onEach) {
       try {
         const resp = await fetch(url);
         if (resp.ok) await cache.put(url, resp);
+        else if (resp.status >= 500) failed.push(url);
       } catch {
         // Left uncached on purpose — retried on the next page load.
+        failed.push(url);
       }
       if (onEach) await onEach(url);
     }
@@ -221,6 +235,7 @@ async function fetchIntoCache(cache, urls, concurrency, onEach) {
   await Promise.all(
     Array.from({ length: Math.min(concurrency, queue.length) }, worker)
   );
+  return failed;
 }
 
 async function pruneCaches({ keepPrevious }) {
@@ -317,13 +332,17 @@ async function cacheFirst(request) {
 // NAV_SOFT_TIMEOUT_MS, and if nothing is cached we show a wait page rather
 // than nothing at all.
 async function networkFirstWithFallback(request) {
+  // Remember *why* the network gave us nothing: a rejected fetch (DNS, TLS,
+  // connection refused) is a different problem from a slow server, and the
+  // user deserves to be told which.
+  let networkError = null;
   const network = fetch(request).then(async response => {
     if (response.ok) {
       const cache = await caches.open(CACHE_VERSION);
       cache.put(request, response.clone());
     }
     return response;
-  }).catch(() => null);
+  }).catch(err => { networkError = err; return null; });
 
   const fresh = await Promise.race([network, timeoutAfter(NAV_SOFT_TIMEOUT_MS)]);
   if (fresh) return fresh;
@@ -338,9 +357,18 @@ async function networkFirstWithFallback(request) {
   ]);
   if (late) return late;
 
-  // Online but nothing came back: the server is most likely still busy
-  // serving an update. Say so, and retry on the user's behalf.
-  return htmlResponse(navigator.onLine ? UPDATING_PAGE : OFFLINE_PAGE);
+  if (!navigator.onLine) return htmlResponse(OFFLINE_PAGE);
+
+  // The connection itself failed. Not an update — the server is unreachable
+  // from this network (or down). Say so plainly.
+  if (networkError) {
+    console.warn('[SW] Navigation failed:', networkError);
+    return htmlResponse(UNREACHABLE_PAGE);
+  }
+
+  // Connected but nothing came back in time: the server is most likely still
+  // busy serving an update. Say so, and retry on the user's behalf.
+  return htmlResponse(UPDATING_PAGE);
 }
 
 // Network-first for small JSON data, with a soft timeout so a stalled
@@ -399,12 +427,54 @@ const PAGE_STYLE = `
     button { background: #f0a500; color: #1a2a3a; border: none; border-radius: 6px;
              padding: 12px 28px; font-size: 1em; font-weight: bold; cursor: pointer; }
     button:hover { background: #d4911a; }
+    button.secondary { background: transparent; color: #ccc; border: 1px solid #667;
+                       margin-top: 14px; font-weight: normal; font-size: 0.85em; padding: 8px 18px; }
+    button.secondary:hover { background: rgba(255,255,255,0.1); }
     .status { margin-top: 20px; font-size: 0.85em; color: #aaa; }
     .spinner { width: 38px; height: 38px; margin: 0 auto 22px; border-radius: 50%;
                border: 4px solid rgba(255,255,255,0.2); border-top-color: #f0a500;
                animation: spin 0.9s linear infinite; }
     @keyframes spin { to { transform: rotate(360deg); } }
 `;
+
+// "Reset app": unregister this worker and drop every cache, then reload
+// straight from the network. The escape hatch for a user stuck behind a bad
+// cache — without it they'd have to dig through browser settings.
+const RESET_BUTTON = `
+    <button class="secondary" onclick="resetApp()">Reset app</button>`;
+
+const RESET_SCRIPT = `
+    function resetApp() {
+      var statusEl = document.getElementById('status');
+      if (statusEl) statusEl.textContent = 'Resetting\\u2026';
+      var unregister = navigator.serviceWorker
+        ? navigator.serviceWorker.getRegistrations().then(function(regs) {
+            return Promise.all(regs.map(function(r) { return r.unregister(); }));
+          })
+        : Promise.resolve();
+      var clear = window.caches
+        ? caches.keys().then(function(keys) {
+            return Promise.all(keys.map(function(k) { return caches.delete(k); }));
+          })
+        : Promise.resolve();
+      Promise.all([unregister, clear]).catch(function() {}).then(function() {
+        location.reload();
+      });
+    }`;
+
+// Count down, then reload. Named `statusEl`, not `status`: a top-level
+// `var status` is the legacy `window.status` string, so writes to its
+// textContent silently vanish and the countdown sticks at its first value.
+function retryScript(seconds) {
+  return `
+    var left = ${seconds};
+    var statusEl = document.getElementById('status');
+    setInterval(function() {
+      left--;
+      if (left <= 0) { statusEl.textContent = 'Retrying\\u2026'; location.reload(); return; }
+      statusEl.textContent = 'Retrying in ' + left + 's\\u2026';
+    }, 1000);`;
+}
 
 const UPDATING_PAGE = `<!DOCTYPE html>
 <html lang="en">
@@ -420,16 +490,29 @@ const UPDATING_PAGE = `<!DOCTYPE html>
     <h1>Updating&hellip;</h1>
     <p>The app is finishing an update. This page will load as soon as it's ready — no need to close the app.</p>
     <button onclick="location.reload()">Reload Now</button>
-    <p class="status" id="status">Retrying in 5s&hellip;</p>
+    <p class="status" id="status">Retrying in 5s&hellip;</p>${RESET_BUTTON}
   </div>
-  <script>
-    var left = 5;
-    var status = document.getElementById('status');
-    setInterval(function() {
-      left--;
-      if (left <= 0) { status.textContent = 'Retrying\\u2026'; location.reload(); return; }
-      status.textContent = 'Retrying in ' + left + 's\\u2026';
-    }, 1000);
+  <script>${retryScript(5)}${RESET_SCRIPT}
+  </script>
+</body>
+</html>`;
+
+const UNREACHABLE_PAGE = `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Can't reach server — CW Practice</title>
+  <style>${PAGE_STYLE}</style>
+</head>
+<body>
+  <div class="card">
+    <h1>Can't reach the server</h1>
+    <p>Your device is online, but the connection to the CW Practice server failed. The server may be down, or this network may be blocking it — try switching between Wi-Fi and cellular.</p>
+    <button onclick="location.reload()">Try Again</button>
+    <p class="status" id="status">Retrying in 15s&hellip;</p>${RESET_BUTTON}
+  </div>
+  <script>${retryScript(15)}${RESET_SCRIPT}
   </script>
 </body>
 </html>`;
@@ -447,9 +530,9 @@ const OFFLINE_PAGE = `<!DOCTYPE html>
     <h1>You are offline</h1>
     <p>This page hasn't been cached yet. Pages you've visited before are available offline.</p>
     <button onclick="location.reload()">Try Again</button>
-    <p class="status" id="status">Waiting for connection&hellip;</p>
+    <p class="status" id="status">Waiting for connection&hellip;</p>${RESET_BUTTON}
   </div>
-  <script>
+  <script>${RESET_SCRIPT}
     window.addEventListener('online', function() {
       document.getElementById('status').textContent = 'Connection restored — reloading…';
       setTimeout(function() { location.reload(); }, 500);
